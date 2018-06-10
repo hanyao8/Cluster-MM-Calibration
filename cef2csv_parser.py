@@ -5,12 +5,14 @@ Created on Fri Jun  8 13:39:40 2018
 @author: Choon
 """
 
+
 import os
 import io
 
-inputfile = open(os.getcwd()+"\\C1_CP_FGM_SPIN__20180110_000000_20180117_000000_V180529.cef")
-text = inputfile.readlines()
+cef_file_name = "C1_CP_FGM_SPIN__20180110_000000_20180117_000000_V180529"
 
+inputfile = open(os.getcwd()+"\\"+cef_file_name+".cef")
+text = inputfile.readlines()
 
 
 i=0
