@@ -9,7 +9,7 @@ Created on Fri Jun  8 13:39:40 2018
 import os
 import io
 
-cef_file_name = "C1_CP_FGM_SPIN__20180110_000000_20180117_000000_V180529"
+cef_file_name = "C1_CP_FGM_5VPS__20060301_103000_20060301_113000_V140304"
 
 inputfile = open(os.getcwd()+"\\"+cef_file_name+".cef")
 text = inputfile.readlines()
