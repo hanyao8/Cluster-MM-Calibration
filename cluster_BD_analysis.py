@@ -17,9 +17,9 @@ import matplotlib.pyplot as plt
 import time
 from datetime import datetime
 
-t_int = 180
-overlap = 10
-res = 0.2 #5 vectors per second
+t_int = 120
+shift = 10
+#res = 0.2 #5 vectors per second
 
 var_arr = ['time_tags__C1_CP_FGM_5VPS',
  'half_interval__C1_CP_FGM_5VPS',
@@ -71,27 +71,27 @@ for i in range(0,len(t_secs)):
 
 
 ##################################################################################
-t0_itv = t_secs[0]
+#t0_itv = t_secs[0]
 
-subintervals = np.empty(( int((t_secs[-1]-t_secs[0]-t_int+overlap)/overlap) ,2))
-for i in range(0,int((t_secs[-1]-t_secs[0]-t_int+overlap)/overlap)):
-    subintervals[i][0] = t0_itv + i*overlap
-    subintervals[i][1] = t0_itv + i*overlap + t_int
+subintervals = np.empty(( int((t_secs[-1]-t_secs[0]-t_int+shift)/shift) ,2))
+for i in range(0,int((t_secs[-1]-t_secs[0]-t_int+shift)/shift)):
+    subintervals[i][0] = t_secs[0] + i*shift
+    subintervals[i][1] = t_secs[0] + i*shift + t_int
 
 Bxy_sitv = []
 Bx_sitv = []
 By_sitv = []
 Bz_sitv = []
 
-Bx_sitv_mean = np.empty(int((t_secs[-1]-t_secs[0]-t_int+overlap)/overlap))
-By_sitv_mean = np.empty(int((t_secs[-1]-t_secs[0]-t_int+overlap)/overlap))
-Bz_sitv_mean = np.empty(int((t_secs[-1]-t_secs[0]-t_int+overlap)/overlap))
+Bx_sitv_mean = np.empty(int((t_secs[-1]-t_secs[0]-t_int+shift)/shift))
+By_sitv_mean = np.empty(int((t_secs[-1]-t_secs[0]-t_int+shift)/shift))
+Bz_sitv_mean = np.empty(int((t_secs[-1]-t_secs[0]-t_int+shift)/shift))
 
-Bxy_sitv_min = np.empty(int((t_secs[-1]-t_secs[0]-t_int+overlap)/overlap))
-Bxy_sitv_max = np.empty(int((t_secs[-1]-t_secs[0]-t_int+overlap)/overlap))
-Bxy_sitv_mean = np.empty(int((t_secs[-1]-t_secs[0]-t_int+overlap)/overlap))
+Bxy_sitv_min = np.empty(int((t_secs[-1]-t_secs[0]-t_int+shift)/shift))
+Bxy_sitv_max = np.empty(int((t_secs[-1]-t_secs[0]-t_int+shift)/shift))
+Bxy_sitv_mean = np.empty(int((t_secs[-1]-t_secs[0]-t_int+shift)/shift))
 
-for i in range(0,int((t_secs[-1]-t_secs[0]-t_int+overlap)/overlap)):
+for i in range(0,int((t_secs[-1]-t_secs[0]-t_int+shift)/shift)):
     Bx_sitv.append(B_x[np.argmax(t_secs>subintervals[i][0]):np.argmax(t_secs>subintervals[i][1])])
     By_sitv.append(B_y[np.argmax(t_secs>subintervals[i][0]):np.argmax(t_secs>subintervals[i][1])])
     Bz_sitv.append(B_z[np.argmax(t_secs>subintervals[i][0]):np.argmax(t_secs>subintervals[i][1])])
@@ -145,7 +145,7 @@ def varlist(data):
 ##################################################################################
 
 Bx_angle = []
-for i in range(0,int((t_secs[-1]-t_secs[0]-t_int+overlap)/overlap)):
+for i in range(0,int((t_secs[-1]-t_secs[0]-t_int+shift)/shift)):
     data = np.array([Bx_sitv[i],By_sitv[i],Bz_sitv[i]])
     M = varlist(data)
     eigen = np.linalg.eig(varlist(data))   
@@ -171,16 +171,24 @@ for i in range(0,int((t_secs[-1]-t_secs[0]-t_int+overlap)/overlap)):
 f1=plt.figure()
 f2=plt.figure()
 f3=plt.figure()
+f4=plt.figure()
 ax1 = f1.add_subplot(111)
 ax2 = f2.add_subplot(111)
 ax3 = f3.add_subplot(111)
+ax4 = f4.add_subplot(111)
 
 ax1.plot_date(t_days,B_mag,fmt='-',linewidth=1.0)
+ax1.set_ylabel("B_mag")
 
 ax2.plot(t_secs,B_z,linewidth=1.0)
 ax2.plot((subintervals[:,0]+subintervals[:,1])/2,Bz_sitv_mean,linewidth=1.0)
+ax2.set_ylabel("B_z")
 
 ax3.plot((subintervals[:,0]+subintervals[:,1])/2,Bx_angle,linewidth=1.0)
+ax3.set_ylabel("B_D_angle")
+ax3.set_title("")
+
+
 
 plt.show()
 
