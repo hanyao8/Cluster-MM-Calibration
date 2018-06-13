@@ -42,6 +42,12 @@ var_names = ['Time','Half Interval','Bx','By','Bz','Bt','x','y','z','range','tm'
 csv_file_name = "C1_CP_FGM_5VPS__20060301_103000_20060301_113000_V140304"
 #csv_data=np.genfromtxt(os.getcwd()+"\\data\\"+ csv_file_name + ".csv",delimiter=',')
 
+
+
+
+####################################################################
+
+
 #with open(os.getcwd()+"\\data\\"+ csv_file_name + ".csv") as csvfile:
 #    readCSV = csv.reader(csvfile,delimiter=',')
 
@@ -56,7 +62,6 @@ B_x = df_arr[:,2]
 B_y = df_arr[:,3]
 B_z = df_arr[:,4]
 B_mag = df_arr[:,5]
-
 
 
 t_datetime = []
@@ -202,71 +207,71 @@ for i in range(0,int((t_secs[-1]-t_secs[0]-t_int+shift)/shift)):
     
  
 ##################################################################################
-
-
-f1=plt.figure()
-f2=plt.figure()
-f3=plt.figure()
-f4=plt.figure()
-f5=plt.figure()
-
-ax1 = f1.add_subplot(111)
-ax21 = f2.add_subplot(311)
-ax22 = f2.add_subplot(312)
-ax23 = f2.add_subplot(313)
-ax31 = f3.add_subplot(311)
-ax32 = f3.add_subplot(312)
-ax33 = f3.add_subplot(313)
-ax40 = f4.add_subplot(311)
-ax41 = f4.add_subplot(312)
-ax42 = f4.add_subplot(313)
-ax5 = f5.add_subplot(111)
-
-ax1.plot_date(t_days,B_mag,fmt='-',linewidth=1.0)
-ax1.set_title("B-field magnitude time series")
-ax1.set_xlabel("Time")
-ax1.set_ylabel(r"$B_{mag}$ (nT)")
-
-ax21.plot(t_days,B_x,linewidth=1.0)
-ax21.plot_date((subintervals[:,0]+subintervals[:,1])/2/3600/24,Bx_sitv_mean,fmt='-',linewidth=1.0)
-ax21.set_title("Cartesian B-field time series")
-ax21.set_ylabel(r"$B_{x}$ (nT)")
-ax22.plot(t_days,B_y,linewidth=1.0)
-ax22.plot_date((subintervals[:,0]+subintervals[:,1])/2/3600/24,By_sitv_mean,fmt='-',linewidth=1.0)
-ax22.set_ylabel(r"$B_{y}$ (nT)")
-ax23.plot(t_days,B_z,linewidth=1.0)
-ax23.plot_date((subintervals[:,0]+subintervals[:,1])/2/3600/24,Bz_sitv_mean,fmt='-',linewidth=1.0)
-ax23.set_ylabel(r"$B_{z}$ (nT)")
-ax23.set_xlabel("Time")
-
-
-ax31.plot_date(t_days,B_x/B_mag,fmt='-',linewidth=1.0)
-ax31.set_ylabel(r"$B_{x}$ (nT)")
-ax31.set_title("Normalised Cartesian B-field time series")
-ax32.plot_date(t_days,B_y/B_mag,fmt='-',linewidth=1.0)
-ax32.set_ylabel(r"$B_{y}$ (nT)")
-ax33.plot_date(t_days,B_z/B_mag,fmt='-',linewidth=1.0)
-ax33.set_ylabel(r"$B_{z}$ (nT)")
-ax33.set_xlabel("Time")
-
-
-
-ax40.plot_date(t_days,B_mag,fmt='-',linewidth=1.0)
-ax41.plot_date(t_days,np.array(theta)*180/np.pi,fmt='-',linewidth=1.0)
-ax42.plot_date(t_days,np.array(phi)*180/np.pi,fmt='-',linewidth=1.0)
-ax40.set_title("Sph. Polar B-field time series")
-ax40.set_ylabel(r"$B_{mag}$ (nT)")
-ax41.set_ylabel(r"$\theta$ (degs)")
-ax42.set_ylabel(r"$\phi$ (degs)")
-ax42.set_xlabel("Time")
-
-ax5.plot_date((subintervals[:,0]+subintervals[:,1])/2/3600/24,Bx_angle,fmt='-',linewidth=1.0)
-ax5.plot_date((subintervals[:,0]+subintervals[:,1])/2/3600/24,np.array(len(subintervals[:,0])*[30]),fmt='-',linewidth=1.0)
-ax5.set_ylabel("B_D_angle (degs)")
-ax5.set_title("Time Series of Angle between MV dir. and B-field dir.")
-ax5.set_xlabel("Time")
-
-plt.show()
-
+if __name__=="__main__":
+    
+    f1=plt.figure()
+    f2=plt.figure()
+    f3=plt.figure()
+    f4=plt.figure()
+    f5=plt.figure()
+    
+    ax1 = f1.add_subplot(111)
+    ax21 = f2.add_subplot(311)
+    ax22 = f2.add_subplot(312)
+    ax23 = f2.add_subplot(313)
+    ax31 = f3.add_subplot(311)
+    ax32 = f3.add_subplot(312)
+    ax33 = f3.add_subplot(313)
+    ax40 = f4.add_subplot(311)
+    ax41 = f4.add_subplot(312)
+    ax42 = f4.add_subplot(313)
+    ax5 = f5.add_subplot(111)
+    
+    ax1.plot_date(t_days,B_mag,fmt='-',linewidth=1.0)
+    ax1.set_title("B-field magnitude time series")
+    ax1.set_xlabel("Time")
+    ax1.set_ylabel(r"$B_{mag}$ (nT)")
+    
+    ax21.plot(t_days,B_x,linewidth=1.0)
+    ax21.plot_date((subintervals[:,0]+subintervals[:,1])/2/3600/24,Bx_sitv_mean,fmt='-',linewidth=1.0)
+    ax21.set_title("Cartesian B-field time series")
+    ax21.set_ylabel(r"$B_{x}$ (nT)")
+    ax22.plot(t_days,B_y,linewidth=1.0)
+    ax22.plot_date((subintervals[:,0]+subintervals[:,1])/2/3600/24,By_sitv_mean,fmt='-',linewidth=1.0)
+    ax22.set_ylabel(r"$B_{y}$ (nT)")
+    ax23.plot(t_days,B_z,linewidth=1.0)
+    ax23.plot_date((subintervals[:,0]+subintervals[:,1])/2/3600/24,Bz_sitv_mean,fmt='-',linewidth=1.0)
+    ax23.set_ylabel(r"$B_{z}$ (nT)")
+    ax23.set_xlabel("Time")
+    
+    
+    ax31.plot_date(t_days,B_x/B_mag,fmt='-',linewidth=1.0)
+    ax31.set_ylabel(r"$B_{x}$ (nT)")
+    ax31.set_title("Normalised Cartesian B-field time series")
+    ax32.plot_date(t_days,B_y/B_mag,fmt='-',linewidth=1.0)
+    ax32.set_ylabel(r"$B_{y}$ (nT)")
+    ax33.plot_date(t_days,B_z/B_mag,fmt='-',linewidth=1.0)
+    ax33.set_ylabel(r"$B_{z}$ (nT)")
+    ax33.set_xlabel("Time")
+    
+    
+    
+    ax40.plot_date(t_days,B_mag,fmt='-',linewidth=1.0)
+    ax41.plot_date(t_days,np.array(theta)*180/np.pi,fmt='-',linewidth=1.0)
+    ax42.plot_date(t_days,np.array(phi)*180/np.pi,fmt='-',linewidth=1.0)
+    ax40.set_title("Sph. Polar B-field time series")
+    ax40.set_ylabel(r"$B_{mag}$ (nT)")
+    ax41.set_ylabel(r"$\theta$ (degs)")
+    ax42.set_ylabel(r"$\phi$ (degs)")
+    ax42.set_xlabel("Time")
+    
+    ax5.plot_date((subintervals[:,0]+subintervals[:,1])/2/3600/24,Bx_angle,fmt='-',linewidth=1.0)
+    ax5.plot_date((subintervals[:,0]+subintervals[:,1])/2/3600/24,np.array(len(subintervals[:,0])*[30]),fmt='-',linewidth=1.0)
+    ax5.set_ylabel("B_D_angle (degs)")
+    ax5.set_title("Time Series of Angle between MV dir. and B-field dir.")
+    ax5.set_xlabel("Time")
+    
+    plt.show()
+    
 
 
