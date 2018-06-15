@@ -243,7 +243,7 @@ for i in range(0,len(t_int_arr)):
      
     ##################################################################################
 
-    
+if __name__=="__main__":
 
     """
     ax1.plot_date(t_days,B_mag,fmt='-',linewidth=1.0)
