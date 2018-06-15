@@ -21,8 +21,11 @@ from datetime import datetime
 #t_int_arr = [45,60,75,90,120,150]
 #t_int_arr = [15,30]
 #t_int_arr = [45,60,75]
-t_int_arr = [90,120,150]
-shift_arr = t_int_arr
+#t_int_arr = [90,120,150]
+t_int_arr=[300]
+#shift_arr=[15]
+#shift_arr = t_int_arr
+shift_arr = [10]*len(t_int_arr)
 #res = 0.2 #5 vectors per second
 
 """
@@ -51,8 +54,11 @@ for i in range(0,len(t_int_arr)):
     t_int = t_int_arr[i]
     shift = shift_arr[i]
     
-    data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T10:58:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
-    data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T11:10:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+    data_start_time_str = '2006-03-01T10:30:00.000Z'
+    data_end_time_str = '2006-03-01T11:29:00.000Z'
+    
+    data_start_time = matplotlib.dates.date2num(datetime.strptime(data_start_time_str,'%Y-%m-%dT%H:%M:%S.%fZ'))
+    data_end_time = matplotlib.dates.date2num(datetime.strptime(data_end_time_str,'%Y-%m-%dT%H:%M:%S.%fZ'))
     
     var_arr = ['time_tags__C1_CP_FGM_5VPS',
      'half_interval__C1_CP_FGM_5VPS',
@@ -225,7 +231,7 @@ for i in range(0,len(t_int_arr)):
         B_dir = np.array([Bx_sitv_mean[i],By_sitv_mean[i],Bz_sitv_mean[i]])
         B_dir /= np.sqrt(Bx_sitv_mean[i]**2+By_sitv_mean[i]**2+Bz_sitv_mean[i]**2)
         
-        Bx_angle.append( np.arccos(abs(np.dot(x1,B_dir))) * 180/np.pi )
+        Bx_angle.append( np.arccos(np.dot(x1,B_dir)) * 180/np.pi )
     
     ##################################################################################
     

@@ -17,13 +17,15 @@ import matplotlib.pyplot as plt
 import time
 from datetime import datetime
 
-t_int = 120
-shift = 10
+t_int = 180
+#t_int = 300
+#shift=t_int
+shift = 180
 #res = 0.2 #5 vectors per second
 
 
-data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T10:58:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
-data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T11:10:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T10:30:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T11:29:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 
 var_arr = ['time_tags__C1_CP_FGM_5VPS',
  'half_interval__C1_CP_FGM_5VPS',
@@ -69,7 +71,7 @@ for i in range(0,len(t)):
     strpdtime=datetime.strptime(t[i],'%Y-%m-%dT%H:%M:%S.%fZ')
     t_datetime.append(strpdtime)
 t_days = matplotlib.dates.date2num(t_datetime)
-
+#print(t_days)
 t_secs= t_days*24*3600
 
 
@@ -184,6 +186,8 @@ def varlist(data):
 ##################################################################################
 
 Bx_angle = []
+theta_D = []
+phi_D = []
 for i in range(0,int((t_secs[-1]-t_secs[0]-t_int+shift)/shift)):
     data = np.array([Bx_sitv[i],By_sitv[i],Bz_sitv[i]])
     M = varlist(data)
@@ -192,11 +196,16 @@ for i in range(0,int((t_secs[-1]-t_secs[0]-t_int+shift)/shift)):
     lam1_index = np.argmax(eigen[0])
     
     x1 = eigen[1][:,lam1_index]
+    x1_xy = np.sqrt(x1[0]**2+x1[1]**2)
     
     B_dir = np.array([Bx_sitv_mean[i],By_sitv_mean[i],Bz_sitv_mean[i]])
     B_dir /= np.sqrt(Bx_sitv_mean[i]**2+By_sitv_mean[i]**2+Bz_sitv_mean[i]**2)
+    B_dir_xy = np.sqrt(B_dir[0]**2+B_dir[1]**2)
     
-    Bx_angle.append( np.arccos(abs(np.dot(x1,B_dir))) * 180/np.pi )
+    Bx_angle.append( np.arccos(np.dot(x1,B_dir)) * 180/np.pi )
+
+    theta_D.append( (np.arctan2( [x1_xy],[x1[2]] ))[0])
+    phi_D.append( (np.arctan2( [x1[1]],[x1[0] ]) )[0] )
 
 ##################################################################################
 
@@ -214,6 +223,7 @@ if __name__=="__main__":
     f3=plt.figure()
     f4=plt.figure()
     f5=plt.figure()
+    f6=plt.figure()
     
     ax1 = f1.add_subplot(111)
     ax21 = f2.add_subplot(311)
@@ -226,6 +236,8 @@ if __name__=="__main__":
     ax41 = f4.add_subplot(312)
     ax42 = f4.add_subplot(313)
     ax5 = f5.add_subplot(111)
+    ax61 = f6.add_subplot(211)
+    ax62 = f6.add_subplot(212)
     
     ax1.plot_date(t_days,B_mag,fmt='-',linewidth=1.0)
     ax1.set_title("B-field magnitude time series")
@@ -268,8 +280,23 @@ if __name__=="__main__":
     ax5.plot_date((subintervals[:,0]+subintervals[:,1])/2/3600/24,Bx_angle,fmt='-',linewidth=1.0)
     ax5.plot_date((subintervals[:,0]+subintervals[:,1])/2/3600/24,np.array(len(subintervals[:,0])*[30]),fmt='-',linewidth=1.0)
     ax5.set_ylabel("B_D_angle (degs)")
-    ax5.set_title("Time Series of Angle between MV dir. and B-field dir.")
+    ax5.set_title("Angle between MV and B $t_{si}$=%d,$t_{sh}$=%d"%(t_int,shift))
     ax5.set_xlabel("Time")
+    ax5.axvline(datetime(2006, 3, 1,11),alpha=0.5,color='orange')
+    ax5.axvline(datetime(2006, 3, 1,11, 8),alpha=0.5,color='orange')
+    
+    ax61.plot_date((subintervals[:,0]+subintervals[:,1])/2/3600/24,np.array(theta_D)*180/np.pi,fmt='-',linewidth=1.0,label="MV")
+    ax62.plot_date((subintervals[:,0]+subintervals[:,1])/2/3600/24,np.array(phi_D)*180/np.pi,fmt='-',linewidth=1.0)  
+    ax61.set_title(r"Maximum Variance Direction $t_{si}$=%d,$t_{sh}$=%d"%(t_int,shift))
+    ax61.set_ylabel(r"$\theta_{D}$ (degs)")
+    ax62.set_ylabel(r"$\phi_{D}$ (degs)")
+    ax61.plot_date(t_days,np.array(theta)*180/np.pi,fmt='-',linewidth=1.0,label="B")
+    ax62.plot_date(t_days,np.array(phi)*180/np.pi,fmt='-',linewidth=1.0)    
+    ax61.axvline(datetime(2006, 3, 1,11),alpha=0.6)
+    ax61.axvline(datetime(2006, 3, 1,11, 8),alpha=0.6)
+    ax62.axvline(datetime(2006, 3, 1,11),alpha=0.6)
+    ax62.axvline(datetime(2006, 3, 1,11, 8),alpha=0.6)
+    ax61.legend()
     
     plt.show()
     
