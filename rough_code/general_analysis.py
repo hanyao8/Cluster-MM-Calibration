@@ -150,11 +150,7 @@ gapadj_subintervals = []
 for i in range(0,int((t_secs[-1]-t_secs[0]-t_int+shift)/shift)):
     si_start = np.argmax(t_secs>subintervals[i][0])
     si_end = np.argmax(t_secs>subintervals[i][1])
-    """
-    if len(B_x[si_start:si_end])==0:
-        np.delete(subintervals,i,0)
-        print("some deletion") 
-    """
+
     if len(B_x[si_start:si_end])!=0:
         gapadj_subintervals.append(subintervals[i])
         

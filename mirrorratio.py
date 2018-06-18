@@ -106,7 +106,7 @@ for i in range(0,int((t_secs[-1]-t_secs[0]-t_int+overlap)/overlap)):
     
     Bxy_sitv_min[i] = min(Bxy_sitv[i])
     Bxy_sitv_max[i] = max(Bxy_sitv[i])
-Bxy_sitv_mean[i] = np.mean(Bxy_sitv[i])
+    Bxy_sitv_mean[i] = np.mean(Bxy_sitv[i])
 ##################################################################################
 """
 B_sitv=[Bx_sitv,By_sitv,Bz_sitv]
