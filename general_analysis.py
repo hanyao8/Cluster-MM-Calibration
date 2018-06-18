@@ -17,15 +17,16 @@ import matplotlib.pyplot as plt
 import time
 from datetime import datetime
 
-t_int = 180
-#t_int = 300
+#t_int = 180
+t_int = 300
 #shift=t_int
-shift = 180
+shift = 10
+#shift = 180
 #res = 0.2 #5 vectors per second
 
 
 data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T10:30:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
-data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T11:29:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T11:30:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 
 var_arr = ['time_tags__C1_CP_FGM_5VPS',
  'half_interval__C1_CP_FGM_5VPS',
@@ -41,7 +42,9 @@ var_arr = ['time_tags__C1_CP_FGM_5VPS',
 
 var_names = ['Time','Half Interval','Bx','By','Bz','Bt','x','y','z','range','tm']
 
-csv_file_name = "C1_CP_FGM_5VPS__20060301_103000_20060301_113000_V140304"
+
+csv_file_name = "C3_CP_FGM_5VPS__20060301_000000_20060302_000000_V140305"
+#csv_file_name = "C1_CP_FGM_5VPS__20060301_103000_20060301_113000_V140304"
 #csv_data=np.genfromtxt(os.getcwd()+"\\data\\"+ csv_file_name + ".csv",delimiter=',')
 
 
@@ -118,37 +121,68 @@ subintervals = np.empty(( int((t_secs[-1]-t_secs[0]-t_int+shift)/shift) ,2))
 for i in range(0,int((t_secs[-1]-t_secs[0]-t_int+shift)/shift)):
     subintervals[i][0] = t_secs[0] + i*shift
     subintervals[i][1] = t_secs[0] + i*shift + t_int
+print(len(subintervals))
+print(np.shape(subintervals))
 
 Bxy_sitv = []
 Bx_sitv = []
 By_sitv = []
 Bz_sitv = []
 
-Bx_sitv_mean = np.empty(int((t_secs[-1]-t_secs[0]-t_int+shift)/shift))
-By_sitv_mean = np.empty(int((t_secs[-1]-t_secs[0]-t_int+shift)/shift))
-Bz_sitv_mean = np.empty(int((t_secs[-1]-t_secs[0]-t_int+shift)/shift))
+Bx_sitv_mean = []
+By_sitv_mean = []
+Bz_sitv_mean = []
 
-Bxy_sitv_min = np.empty(int((t_secs[-1]-t_secs[0]-t_int+shift)/shift))
-Bxy_sitv_max = np.empty(int((t_secs[-1]-t_secs[0]-t_int+shift)/shift))
-Bxy_sitv_mean = np.empty(int((t_secs[-1]-t_secs[0]-t_int+shift)/shift))
+Bxy_sitv_min = []
+Bxy_sitv_max = []
+Bxy_sitv_mean = []
 
+#Bx_sitv_mean = np.empty(int((t_secs[-1]-t_secs[0]-t_int+shift)/shift))
+#By_sitv_mean = np.empty(int((t_secs[-1]-t_secs[0]-t_int+shift)/shift))
+#Bz_sitv_mean = np.empty(int((t_secs[-1]-t_secs[0]-t_int+shift)/shift))
+
+#Bxy_sitv_min = np.empty(int((t_secs[-1]-t_secs[0]-t_int+shift)/shift))
+#Bxy_sitv_max = np.empty(int((t_secs[-1]-t_secs[0]-t_int+shift)/shift))
+#Bxy_sitv_mean = np.empty(int((t_secs[-1]-t_secs[0]-t_int+shift)/shift))
+
+
+gapadj_subintervals = []
 for i in range(0,int((t_secs[-1]-t_secs[0]-t_int+shift)/shift)):
-    Bx_sitv.append(B_x[np.argmax(t_secs>subintervals[i][0]):np.argmax(t_secs>subintervals[i][1])])
-    By_sitv.append(B_y[np.argmax(t_secs>subintervals[i][0]):np.argmax(t_secs>subintervals[i][1])])
-    Bz_sitv.append(B_z[np.argmax(t_secs>subintervals[i][0]):np.argmax(t_secs>subintervals[i][1])])
-    
-    Bxy_sitv.append(B_xy[np.argmax(t_secs>subintervals[i][0]):np.argmax(t_secs>subintervals[i][1])])
-    
-    
-    Bx_sitv_mean[i] = np.mean(Bx_sitv[i])
-    By_sitv_mean[i] = np.mean(By_sitv[i])
-    Bz_sitv_mean[i] = np.mean(Bz_sitv[i])    
-    
-    
-    Bxy_sitv_min[i] = min(Bxy_sitv[i])
-    Bxy_sitv_max[i] = max(Bxy_sitv[i])
-Bxy_sitv_mean[i] = np.mean(Bxy_sitv[i])
+    si_start = np.argmax(t_secs>subintervals[i][0])
+    si_end = np.argmax(t_secs>subintervals[i][1])
+    """
+    if len(B_x[si_start:si_end])==0:
+        np.delete(subintervals,i,0)
+        print("some deletion") 
+    """
+    if len(B_x[si_start:si_end])!=0:
+        gapadj_subintervals.append(subintervals[i])
+        
+        Bx_sitv.append(B_x[si_start:si_end])
+        By_sitv.append(B_y[si_start:si_end])
+        Bz_sitv.append(B_z[si_start:si_end])
+        Bxy_sitv.append(B_xy[si_start:si_end])
+        
+        Bx_sitv_mean.append(np.mean(Bx_sitv[-1]))
+        By_sitv_mean.append(np.mean(By_sitv[-1]))
+        Bz_sitv_mean.append(np.mean(Bz_sitv[-1]))
+        
+        Bxy_sitv_min.append(min(Bxy_sitv[-1]))
+        Bxy_sitv_max.append(max(Bxy_sitv[-1]))
+        Bxy_sitv_mean.append(np.mean(Bxy_sitv[-1]))
+        
+        #Bx_sitv_mean[i] = np.mean(Bx_sitv[i])
+        #By_sitv_mean[i] = np.mean(By_sitv[i])
+        #Bz_sitv_mean[i] = np.mean(Bz_sitv[i])    
+        
+        
+        #Bxy_sitv_min[i] = min(Bxy_sitv[i])
+        #Bxy_sitv_max[i] = max(Bxy_sitv[i])
+        #Bxy_sitv_mean[i] = np.mean(Bxy_sitv[i])
 ##################################################################################
+print(len(gapadj_subintervals))
+subintervals = np.array(gapadj_subintervals.copy())
+        
 """
 B_sitv=[Bx_sitv,By_sitv,Bz_sitv]
 
@@ -188,12 +222,28 @@ def varlist(data):
 Bx_angle = []
 theta_D = []
 phi_D = []
-for i in range(0,int((t_secs[-1]-t_secs[0]-t_int+shift)/shift)):
+lam1_lam2 = []
+lam3_lam2 = []
+
+for i in range(0,len(subintervals)):
+#for i in range(0,int((t_secs[-1]-t_secs[0]-t_int+shift)/shift)):
     data = np.array([Bx_sitv[i],By_sitv[i],Bz_sitv[i]])
     M = varlist(data)
     eigen = np.linalg.eig(varlist(data))   
     
     lam1_index = np.argmax(eigen[0])
+    lam3_index = np.argmin(eigen[0])
+    for i in [0,1,2]:
+        if i!=lam1_index and i!=lam3_index:
+            lam2_index=i
+            break
+        
+    lam1 = eigen[0][lam1_index]
+    lam2 = eigen[0][lam2_index]
+    lam3 = eigen[0][lam3_index]
+    
+    lam1_lam2.append(lam1/lam2)
+    lam3_lam2.append(lam3/lam2)
     
     x1 = eigen[1][:,lam1_index]
     x1_xy = np.sqrt(x1[0]**2+x1[1]**2)
@@ -202,7 +252,8 @@ for i in range(0,int((t_secs[-1]-t_secs[0]-t_int+shift)/shift)):
     B_dir /= np.sqrt(Bx_sitv_mean[i]**2+By_sitv_mean[i]**2+Bz_sitv_mean[i]**2)
     B_dir_xy = np.sqrt(B_dir[0]**2+B_dir[1]**2)
     
-    Bx_angle.append( np.arccos(np.dot(x1,B_dir)) * 180/np.pi )
+    #Bx_angle.append( np.arccos( np.dot(x1,B_dir)) * 180/np.pi )
+    Bx_angle.append( np.arccos( abs(np.dot(x1,B_dir))) * 180/np.pi )
 
     theta_D.append( (np.arctan2( [x1_xy],[x1[2]] ))[0])
     phi_D.append( (np.arctan2( [x1[1]],[x1[0] ]) )[0] )
@@ -224,6 +275,7 @@ if __name__=="__main__":
     f4=plt.figure()
     f5=plt.figure()
     f6=plt.figure()
+    f7=plt.figure()
     
     ax1 = f1.add_subplot(111)
     ax21 = f2.add_subplot(311)
@@ -238,12 +290,16 @@ if __name__=="__main__":
     ax5 = f5.add_subplot(111)
     ax61 = f6.add_subplot(211)
     ax62 = f6.add_subplot(212)
+    ax71 = f7.add_subplot(211)
+    ax72 = f7.add_subplot(212)
     
     ax1.plot_date(t_days,B_mag,fmt='-',linewidth=1.0)
     ax1.set_title("B-field magnitude time series")
     ax1.set_xlabel("Time")
     ax1.set_ylabel(r"$B_{mag}$ (nT)")
-    
+    ax1.axvline(datetime(2006, 3, 1,11),alpha=0.6,color='orange')
+    ax1.axvline(datetime(2006, 3, 1,11, 8),alpha=0.6,color='orange')
+
     ax21.plot(t_days,B_x,linewidth=1.0)
     ax21.plot_date((subintervals[:,0]+subintervals[:,1])/2/3600/24,Bx_sitv_mean,fmt='-',linewidth=1.0)
     ax21.set_title("Cartesian B-field time series")
@@ -292,12 +348,23 @@ if __name__=="__main__":
     ax62.set_ylabel(r"$\phi_{D}$ (degs)")
     ax61.plot_date(t_days,np.array(theta)*180/np.pi,fmt='-',linewidth=1.0,label="B")
     ax62.plot_date(t_days,np.array(phi)*180/np.pi,fmt='-',linewidth=1.0)    
-    ax61.axvline(datetime(2006, 3, 1,11),alpha=0.6)
-    ax61.axvline(datetime(2006, 3, 1,11, 8),alpha=0.6)
-    ax62.axvline(datetime(2006, 3, 1,11),alpha=0.6)
-    ax62.axvline(datetime(2006, 3, 1,11, 8),alpha=0.6)
+    ax61.axvline(datetime(2006, 3, 1,11),alpha=0.6,color='orange')
+    ax61.axvline(datetime(2006, 3, 1,11, 8),alpha=0.6,color='orange')
+    ax62.axvline(datetime(2006, 3, 1,11),alpha=0.6,color='orange')
+    ax62.axvline(datetime(2006, 3, 1,11, 8),alpha=0.6,color='orange')
     ax61.legend()
     
+    ax71.plot_date((subintervals[:,0]+subintervals[:,1])/2/3600/24,np.array(lam1_lam2),fmt='-',linewidth=1.0,label=r"$\frac{\lambda_{1}}{\lambda_{2}}$")
+    ax72.plot_date((subintervals[:,0]+subintervals[:,1])/2/3600/24,np.array(lam3_lam2),fmt='-',linewidth=1.0,label=r"$\frac{\lambda_{3}}{\lambda_{2}}$")      
+    ax71.plot_date((subintervals[:,0]+subintervals[:,1])/2/3600/24,np.array([1.5]*len(lam1_lam2)),fmt='-',linewidth=1.0,color='orange')
+    ax72.plot_date((subintervals[:,0]+subintervals[:,1])/2/3600/24,np.array([0.3]*len(lam3_lam2)),fmt='-',linewidth=1.0,color='orange')  
+    ax71.axvline(datetime(2006, 3, 1,11),alpha=0.5,color='orange')
+    ax71.axvline(datetime(2006, 3, 1,11, 8),alpha=0.5,color='orange')
+    ax72.axvline(datetime(2006, 3, 1,11),alpha=0.5,color='orange')
+    ax72.axvline(datetime(2006, 3, 1,11, 8),alpha=0.5,color='orange')
+    ax71.legend()
+    ax72.legend()
+
     plt.show()
     
 
