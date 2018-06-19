@@ -73,6 +73,7 @@ class processing:
         
         if SETTING=='themis_validation':
             t_days = t
+            
         else:
             t_datetime = []
             for i in range(0,len(t)):
@@ -85,11 +86,16 @@ class processing:
         data_start_index = np.argmax(t_days>data_start_time)
         data_end_index = np.argmax(t_days>data_end_time)-1
         
+        print(data_start_index)
+        print(data_end_index)        
+        
         t = t[data_start_index:data_end_index]
         B_x = B_x[data_start_index:data_end_index]
         B_y = B_y[data_start_index:data_end_index]
         B_z = B_z[data_start_index:data_end_index]
         B_mag = B_mag[data_start_index:data_end_index]
+        
+        print(t[0])
         
         self.B_x=B_x
         self.B_y=B_y
@@ -103,8 +109,14 @@ class processing:
         #t_days = matplotlib.dates.date2num(t_datetime)
         #t_secs= t_days*24*3600
         
-        self.t_days = t_days[data_start_index:data_end_index]
-        self.t_secs = t_secs[data_start_index:data_end_index]
+        t_days = t_days[data_start_index:data_end_index]
+        t_secs = t_secs[data_start_index:data_end_index]
+        
+        self.t_days=t_days
+        self.t_secs=t_secs
+        
+        #print(t_days[0])
+        #print(self.t_days[0])
 
         
         B_xy = np.empty(len(t))

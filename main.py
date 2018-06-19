@@ -185,7 +185,7 @@ if SETTING=='peakness':
     
     var_names = ['Time','Half Interval','Bx','By','Bz','Bt','x','y','z','range','tm']
     
-    csv_file_name = "C1_CP_FGM_5VPS__20060301_103000_20060301_113000_V140304"
+    csv_file_name = "C3_CP_FGM_5VPS__20060301_000000_20060302_000000_V140305"
 
     csv_df = pd.read_csv(os.getcwd()+"\\data\\"+ csv_file_name + ".csv",names=var_names)
     csv_df.head()
