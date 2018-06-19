@@ -23,9 +23,9 @@ import processing
 
 #SETTING='general'
 #SETTING='BD_angle'
-SETTING='mirrorratio'
+#SETTING='mirrorratio'
 #SETTING='themis_validation'
-
+SETTING='peakness'
 
 if SETTING=='general':
     t_int = 180
@@ -174,6 +174,31 @@ if SETTING=='mirrorratio':
     
     
     
+if SETTING=='peakness':
+
+    
+    t_int=300
+    shift = 60
+    
+    data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T10:30:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+    data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T11:29:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+    
+    var_names = ['Time','Half Interval','Bx','By','Bz','Bt','x','y','z','range','tm']
+    
+    csv_file_name = "C1_CP_FGM_5VPS__20060301_103000_20060301_113000_V140304"
+
+    csv_df = pd.read_csv(os.getcwd()+"\\data\\"+ csv_file_name + ".csv",names=var_names)
+    csv_df.head()
+    
+    df_arr = csv_df.values    
+    #data of all variables within the interval defined above (data_start_time and data_end_time)
+
+    
+    params=[[data_start_time,data_end_time],[t_int,shift]]
+
+    inst1 = processing.processing(df_arr,params,SETTING)
+
+    inst1.b_wav
     
     
     
@@ -385,6 +410,13 @@ if __name__=="__main__":
         
         ax2.plot_date(inst1.t_days,inst1.B_mag,fmt='-',linewidth=1.0)                
                 
+    if SETTING=='peakness':
+        timeav=((inst1.subintervals[:,0]+inst1.subintervals[:,1])/2/3600/24)
+        
+        fig6=plt.figure()
+        plt.plot_date(timeav,inst1.peakness,fmt='-',linewidth=1.0)
+        plt.xlabel("Time")
+        plt.ylabel("Peakness")
     
 
 

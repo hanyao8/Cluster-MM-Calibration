@@ -10,7 +10,8 @@ Created on Fri Jun 15 15:57:17 2018
 import numpy as np
 import matplotlib
 from datetime import datetime
-
+import pywt
+from scipy.integrate import quad
 
 ########################## FUNCTIONS #####################################
 
@@ -85,10 +86,15 @@ class processing:
         data_end_index = np.argmax(t_days>data_end_time)-1
         
         t = t[data_start_index:data_end_index]
-        self.B_x = B_x[data_start_index:data_end_index]
-        self.B_y = B_y[data_start_index:data_end_index]
-        self.B_z = B_z[data_start_index:data_end_index]
-        self.B_mag = B_mag[data_start_index:data_end_index]
+        B_x = B_x[data_start_index:data_end_index]
+        B_y = B_y[data_start_index:data_end_index]
+        B_z = B_z[data_start_index:data_end_index]
+        B_mag = B_mag[data_start_index:data_end_index]
+        
+        self.B_x=B_x
+        self.B_y=B_y
+        self.B_z=B_z
+        self.B_mag=B_mag
 
         #t_datetime = []
         #for i in range(0,len(t)):
@@ -123,10 +129,12 @@ class processing:
             subintervals[i][0] = t_secs[0] + i*shift
             subintervals[i][1] = t_secs[0] + i*shift + t_int
 
-        Bxy_sitv = []
+        
         Bx_sitv = []
         By_sitv = []
         Bz_sitv = []
+        Bmag_sitv=[]
+        Bxy_sitv = []
 
         self.Bx_sitv_mean = []
         self.By_sitv_mean = []
@@ -144,9 +152,10 @@ class processing:
             if len(B_x[si_start:si_end])!=0:
                 gapadj_subintervals.append(subintervals[i])
                 
-                Bx_sitv.append(B_x[si_start:si_end])
-                By_sitv.append(B_y[si_start:si_end])
-                Bz_sitv.append(B_z[si_start:si_end])
+                Bx_sitv.append(self.B_x[si_start:si_end])
+                By_sitv.append(self.B_y[si_start:si_end])
+                Bz_sitv.append(self.B_z[si_start:si_end])
+                Bmag_sitv.append(self.B_mag[si_start:si_end])
                 Bxy_sitv.append(B_xy[si_start:si_end])
                 
                 self.Bx_sitv_mean.append(np.mean(Bx_sitv[-1]))
@@ -224,6 +233,35 @@ class processing:
             self.theta_B_PN16.append( np.arctan2(B_dir[2],B_dir_xy) )
             self.theta_D_PN16.append( np.arctan2(x1[2],x1_xy) )          
                 
-        
+        if SETTING=='peakness':
+            widths = np.linspace(1, 61,100)
+            
+            (cA, cD) = pywt.cwt(B_mag, widths,wavelet='mexh')
+
+            b=[]
+            bsitv=[]
+            bsitv_mean = []
+            peakness= []         
+            #bsitv_mean = np.empty(int((t_secs[-1]-t_secs[0]-t_int+shift)/shift))
+            #peakness= np.empty(int((t_secs[-1]-t_secs[0]-t_int+shift)/shift))   
+            deltas=widths[1]-widths[0]
+            val=0
+            for i in range(len(B_mag)):
+                for j in range(len(widths)):
+                    val+=cA[j][i]*(widths[j])**(-3/2)*deltas
+                    
+                b.append(val)
+                
+            for i in range(0,len(subintervals)):
+                si_start = np.argmax(t_secs>subintervals[i][0])
+                si_end = np.argmax(t_secs>subintervals[i][1])                
+    
+                bsitv.append(b[si_start:si_end])
+                bsitv_mean.append(np.mean(bsitv[i]))
+                peakness.append(np.mean((bsitv[i]-bsitv_mean[i])**3)/(np.mean((bsitv[i]-bsitv_mean[i])**2))**1.50)
+                
+            self.peakness = np.array(peakness)
+            self.b_wav = np.array(b)
+
 
 
