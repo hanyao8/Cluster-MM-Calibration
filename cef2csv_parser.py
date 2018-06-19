@@ -10,6 +10,8 @@ import os
 import io
 
 cef_file_name = "C1_CP_FGM_5VPS__20060301_103000_20060301_113000_V140304"
+#cef_file_name = "C3_CP_FGM_5VPS__20060301_000000_20060302_000000_V140305"
+
 
 inputfile = open(os.getcwd()+"\\"+cef_file_name+".cef")
 text = inputfile.readlines()
