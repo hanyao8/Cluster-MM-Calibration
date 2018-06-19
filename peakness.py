@@ -37,7 +37,8 @@ var_arr = ['time_tags__C1_CP_FGM_5VPS',
 
 var_names = ['Time','Half Interval','Bx','By','Bz','Bt','x','y','z','range','tm']
 
-csv_file_name = "200603"
+#csv_file_name = "2006March3"
+csv_file_name = "2006March3"
 #csv_data=np.genfromtxt(os.getcwd()+"\\data\\"+ csv_file_name + ".csv",delimiter=',')
 
 #with open(os.getcwd()+"\\data\\"+ csv_file_name + ".csv") as csvfile:
@@ -268,7 +269,7 @@ yy = exponenial_func(xx, *popt)
 plt.plot(x,y,'o', xx, yy)
 """
 
-widths = np.linspace(1, 61,100)
+widths = np.linspace(1, 61,70)
 
 (cA, cD) = pywt.cwt(B_mag, widths,wavelet='mexh')
 
