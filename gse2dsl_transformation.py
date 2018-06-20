@@ -57,7 +57,7 @@ t_secs= t_days*24*3600
 
 t_sa_datetime = []
 for i in range(0,len(t_sa)):
-    print(t_sa[i])
+    #print(t_sa[i])
     strpdtime=datetime.strptime(t_sa[i],'%Y-%m-%dT%H:%M:%S.%fZ')
     t_sa_datetime.append(strpdtime)
 t_sa_days = matplotlib.dates.date2num(t_sa_datetime)
@@ -72,6 +72,32 @@ for i in range(0,len(t_days)):
     lat_gse_newres.append((lat_gse[j-1]+lat_gse[j])/2)
     long_gse_newres.append((lat_gse[j-1]+lat_gse[j])/2)    
     
+theta_gse = np.array([np.pi/2]*len(lat_gse_newres)) - np.array(lat_gse_newres)/180*np.pi
+phi_gse = np.array(long_gse_newres)/180*np.pi
+
+#Bx_dsl = []
+#By_dsl = []
+#Bz_dsl = []
+for i in range(0,len(t_days)):
+    z_dsl = np.array(([np.sin(theta_gse[i])*np.cos(phi_gse[i]),\
+                  np.sin(theta_gse[i])*np.sin(phi_gse[i]),\
+                  np.cos(theta_gse[i])]))
+    x_cr_z = np.cross([1,0,0],z_dsl)
+    y_dsl = ( x_cr_z / np.sqrt(np.dot(x_cr_z,x_cr_z)) )
+    x_dsl = ( np.cross(y_dsl,z_dsl) )
+    
+    T = np.array([x_dsl,y_dsl,z_dsl])
+    S = np.transpose(T) #matrix of 'eigenvectors'
+    
+    B_gse = [Bx_gse[i],By_gse[i],Bz_gse[i]]
+    B_dsl = np.matmul(T,B_gse)
+    
+    
+    
+    
+
+
+
 
 
 
