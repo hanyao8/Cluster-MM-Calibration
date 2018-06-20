@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 #import time
 from datetime import datetime
 
-import processing
+import processing1 as processing
 
 ###############USER INTERFACE#######################
 
@@ -183,11 +183,15 @@ if SETTING=='peakness':
     data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T10:30:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
     data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T11:29:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
     
+    
+    
     var_names = ['Time','Half Interval','Bx','By','Bz','Bt','x','y','z','range','tm']
     
-    csv_file_name = "2006March3"
+    #csv_file_name = "2006March3"
+    csv_file_name = "C3_CP_FGM_5VPS__20060301_000000_20060302_000000_V140305"
 
-    csv_df = pd.read_csv(os.getcwd()+"//" +  csv_file_name + ".csv",names=var_names)
+
+    csv_df = pd.read_csv(os.getcwd()+"//data//" +  csv_file_name + ".csv",names=var_names)
 
     csv_df.head()
     
