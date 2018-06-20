@@ -9,8 +9,13 @@ Created on Fri Jun  8 13:39:40 2018
 import os
 import io
 
-cef_file_name = "C1_CP_FGM_5VPS__20060301_103000_20060301_113000_V140304"
+#SETTING='fgmdata'
+SETTING='spinaxis'
+
+#cef_file_name = "C1_CP_FGM_5VPS__20060301_103000_20060301_113000_V140304"
 #cef_file_name = "C3_CP_FGM_5VPS__20060301_000000_20060302_000000_V140305"
+cef_file_name = "C3_CP_AUX_SPIN_AXIS__20060301_000000_20060302_000000_V130205"
+#cef_file_name = "C3_CP_AUX_POSGSE_1M__20060301_000000_20060302_000000_V091201"
 
 
 inputfile = open(os.getcwd()+"\\"+cef_file_name+".cef")
@@ -33,8 +38,8 @@ while i<len(text):
     if len(((text[i]).split())) > 0:
         if ((text[i]).split())[0] == 'START_VARIABLE':
             var_arr.append(((text[i]).split())[2])
-    if text[i] == 'DATA_UNTIL = EOF\n':
-        break
+        if ((text[i]).split())[0] == 'DATA_UNTIL':
+            break
     i+=1
     
 data_start_pos = i+1
@@ -44,10 +49,21 @@ csv_file = io.open(os.getcwd() +"\\"+ file_name + ".csv",'w')
 
 data_arr=[]
 
+
+
 i=data_start_pos
 while ((text[i]).split())[0] != '!RECORDS=':
-    data_row_str = ((text[i]).split())[0]
-    csv_file.write(data_row_str+"\n")
+    if SETTING == 'fgmdata':
+        data_row_str = ((text[i]).split())[0]
+        csv_file.write(data_row_str+"\n")        
+    elif SETTING == 'spinaxis':
+        data_row_str = (text[i])
+        data_row_str.replace(" ","")
+        print(data_row_str)
+        csv_file.write(data_row_str) 
+        
+
+    #print(text[i])
     
     i+=1
 
