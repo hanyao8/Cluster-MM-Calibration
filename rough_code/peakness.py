@@ -38,7 +38,7 @@ var_arr = ['time_tags__C1_CP_FGM_5VPS',
 var_names = ['Time','Half Interval','Bx','By','Bz','Bt','x','y','z','range','tm']
 
 #csv_file_name = "2006March3"
-csv_file_name = "2006March3"
+csv_file_name = "20060March"
 #csv_data=np.genfromtxt(os.getcwd()+"\\data\\"+ csv_file_name + ".csv",delimiter=',')
 
 #with open(os.getcwd()+"\\data\\"+ csv_file_name + ".csv") as csvfile:

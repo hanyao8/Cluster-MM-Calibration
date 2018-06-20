@@ -27,7 +27,6 @@ def varlist(data):
     Bxym=(data[0]*data[1]).mean()
     Bxzm=(data[0]*data[2]).mean()
     Byzm=(data[1]*data[2]).mean()
-    
     Varx= Bxsqm-Bxm**2
     Varxy=Bxym-Bxm*Bym
     Varxz=Bxzm-Bxm*Bzm
@@ -93,6 +92,11 @@ class processing:
         B_z = B_z[data_start_index:data_end_index]
         B_mag = B_mag[data_start_index:data_end_index]
         
+<<<<<<< HEAD:processing.py
+=======
+        print(t[0])
+        self.t=t
+>>>>>>> e6a578acbc2b3e3a72c5f0c37a01b4041548dd36:processing1.py
         self.B_x=B_x
         self.B_y=B_y
         self.B_z=B_z

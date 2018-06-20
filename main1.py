@@ -185,9 +185,10 @@ if SETTING=='peakness':
     
     var_names = ['Time','Half Interval','Bx','By','Bz','Bt','x','y','z','range','tm']
     
-    csv_file_name = "C3_CP_FGM_5VPS__20060301_000000_20060302_000000_V140305"
+    csv_file_name = "2006March3"
 
-    csv_df = pd.read_csv(os.getcwd()+"\\data\\"+ csv_file_name + ".csv",names=var_names)
+    csv_df = pd.read_csv(os.getcwd()+"//" +  csv_file_name + ".csv",names=var_names)
+
     csv_df.head()
     
     df_arr = csv_df.values    
@@ -198,7 +199,17 @@ if SETTING=='peakness':
 
     inst1 = processing.processing(df_arr,params,SETTING)
 
-    inst1.b_wav
+    b=inst1.b_wav
+    
+    localmin=[]
+    for i in range(len(b)):
+        if b[i]<b[i-1] and b[i]<b[i+1]:
+            localmin.append(i)
+
+    mirrorpi=[]
+    for i in localmin:
+        if b[i]<0.2*min(b):
+            mirrorpi.append(i)
     
     
     
@@ -417,7 +428,10 @@ if __name__=="__main__":
         plt.plot_date(timeav,inst1.peakness,fmt='-',linewidth=1.0)
         plt.xlabel("Time")
         plt.ylabel("Peakness")
-    
+        
+        fig7=plt.figure()
+        plt.plot_date(inst1.t,b,fmt='-',linewidth=1.0)
+        
 
 
 
