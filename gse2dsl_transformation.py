@@ -57,6 +57,7 @@ t_secs= t_days*24*3600
 
 t_sa_datetime = []
 for i in range(0,len(t_sa)):
+    print(t_sa[i])
     strpdtime=datetime.strptime(t_sa[i],'%Y-%m-%dT%H:%M:%S.%fZ')
     t_sa_datetime.append(strpdtime)
 t_sa_days = matplotlib.dates.date2num(t_sa_datetime)

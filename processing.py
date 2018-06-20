@@ -245,7 +245,7 @@ class processing:
             self.theta_D_PN16.append( np.arctan2(x1[2],x1_xy) )          
                 
         if SETTING=='peakness':
-            widths = np.linspace(1, 61,100)
+            widths = np.linspace(1, 61,500)
             
             (cA, cD) = pywt.cwt(B_mag, widths,wavelet='mexh')
 
