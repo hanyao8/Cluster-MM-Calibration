@@ -218,6 +218,8 @@ if SETTING=='peakness':
             mirrorpi.append(i)
     
 if SETTING=='mmode_search':
+    #DSL based data must be used for this to give valid results
+    
     t_int = 300
     shift = 10        
     
@@ -225,6 +227,10 @@ if SETTING=='mmode_search':
     C_B = 30*np.pi/180
     C_D = 30*np.pi/180
     C_phi = 20*np.pi/180
+    
+    C_lam12 = 1.5
+    C_lam32 = 0.3
+    C_MV_B = 30*np.pi/180
     
     data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T00:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
     data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T22:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
@@ -246,22 +252,42 @@ if SETTING=='mmode_search':
 
 
     
-    Mmode_count = 0
+    Mmode_count_PN16 = 0
+    Mmode_count_SLD08 = 0
     
-    Mmode_indices = []
+    Mmode_indices_PN16 = []
+    Mmode_indices_SLD08 = []
+    Mmode_indices_overlapping = []
     for i in range(0,len(inst1.Bxy_fluct_PN16)):
         if inst1.Bxy_fluct_PN16[i]>C_xy:
             if abs(inst1.phi_PN16[i]) < C_phi:
                 if abs(inst1.theta_B_PN16[i]) < C_B:
                     if abs(inst1.theta_D_PN16[i]) < C_D:
-                        Mmode_indices.append(i)
-                        Mmode_count+=1
-    print(Mmode_count)    
+                        Mmode_indices_PN16.append(i)
+                        Mmode_count_PN16+=1
+        if inst1.lam1_lam2[i] > C_lam12:
+            if inst1.lam3_lam2[i] > C_lam32:
+                if inst1.B_x1_angle[i] < C_MV_B:
+                    Mmode_indices_SLD08.append(i)
+                    Mmode_count_SLD08+=1
+                    
+                    if len(Mmode_indices_PN16)>0 and len(Mmode_indices_SLD08)>0:
+                        if Mmode_indices_PN16[-1]==Mmode_indices_SLD08[-1]:
+                            Mmode_indices_overlapping.append(i)
+    
+    print("PN16:",Mmode_count_PN16)
+    print("SLD08:",Mmode_count_SLD08)
     
     sitv_midpoints_days = (inst1.subintervals[:,0]+inst1.subintervals[:,1])/2/3600/24
-    Mmode_sitv_times = []
-    for i in range(0,len(Mmode_indices)):
-        Mmode_sitv_times.append(matplotlib.dates.num2date(sitv_midpoints_days[Mmode_indices[i]]))
+    Mmode_sitv_times_PN16 = []
+    Mmode_sitv_times_SLD08 = []
+    Mmode_sitv_times_overlapping = []    
+    for i in range(0,len(Mmode_indices_PN16)):
+        Mmode_sitv_times_PN16.append(matplotlib.dates.num2date(sitv_midpoints_days[Mmode_indices_PN16[i]]))
+    for i in range(0,len(Mmode_indices_SLD08)):
+        Mmode_sitv_times_SLD08.append(matplotlib.dates.num2date(sitv_midpoints_days[Mmode_indices_SLD08[i]]))   
+    for i in range(0,len(Mmode_indices_overlapping)):        
+        Mmode_sitv_times_overlapping.append(matplotlib.dates.num2date(sitv_midpoints_days[Mmode_indices_overlapping[i]]))    
     
     
     
@@ -486,36 +512,51 @@ if __name__=="__main__":
         sitv_midpoints = (inst1.subintervals[:,0]+inst1.subintervals[:,1])/2/3600/24
         
         f1=plt.figure()
-        f2=plt.figure()
-        f3=plt.figure()
-        f4=plt.figure()
-        f5=plt.figure()
-        f6=plt.figure()
-        f7=plt.figure()
-        
         ax1 = f1.add_subplot(111)
+        
+        f2=plt.figure()
         ax21 = f2.add_subplot(311)
         ax22 = f2.add_subplot(312)
         ax23 = f2.add_subplot(313)
+        
+        f3=plt.figure()
         ax31 = f3.add_subplot(311)
         ax32 = f3.add_subplot(312)
         ax33 = f3.add_subplot(313)
-        ax40 = f4.add_subplot(311)
-        ax41 = f4.add_subplot(312)
-        ax42 = f4.add_subplot(313)
+        
+        #f4=plt.figure()
+        #ax40 = f4.add_subplot(311)
+        #ax41 = f4.add_subplot(312)
+        #ax42 = f4.add_subplot(313)
+        
+        f5=plt.figure()
         ax5 = f5.add_subplot(111)
+        
+        f6=plt.figure()
         ax61 = f6.add_subplot(211)
         ax62 = f6.add_subplot(212)
+        
+        f7=plt.figure()
         ax71 = f7.add_subplot(211)
-        ax72 = f7.add_subplot(212)    
+        ax72 = f7.add_subplot(212)        
+
+        f8=plt.figure()
+        ax81 = f8.add_subplot(211)
+        ax82 = f8.add_subplot(212)      
+    
         
         ax1.plot_date(inst1.t_days,inst1.B_mag,fmt='-',linewidth=1.0)
         ax1.set_title("B-field magnitude time series")
         ax1.set_xlabel("Time")
         ax1.set_ylabel(r"$B_{mag}$ (nT)")
-        for i in range(0,len(Mmode_sitv_times)):
-            if i%10==0:            
-                ax1.axvline(Mmode_sitv_times[i],alpha=0.5,color='orange',linewidth=1.0)
+        for i in range(0,len(Mmode_sitv_times_PN16)):
+            #i%10==0:            
+            ax1.axvline(Mmode_sitv_times_PN16[i],alpha=0.4,color='orange',linewidth=1.0)
+        for i in range(0,len(Mmode_sitv_times_SLD08)):
+            ax1.axvline(Mmode_sitv_times_SLD08[i],alpha=0.3,color='green',linewidth=1.0)
+        ax1.axvline(Mmode_sitv_times_PN16[0],alpha=0.4,color='orange',linewidth=1.0,label='PN16')
+        ax1.axvline(Mmode_sitv_times_SLD08[0],alpha=0.3,color='green',linewidth=1.0,label='SLD08')
+        ax1.legend()
         
         ax21.plot(inst1.t_days,inst1.B_x,linewidth=1.0)
         ax21.plot_date(sitv_midpoints,inst1.Bx_sitv_mean,fmt='-',linewidth=1.0)
@@ -539,7 +580,6 @@ if __name__=="__main__":
         ax33.set_ylabel(r"$B_{z}$ (nT)")
         ax33.set_xlabel("Time")
         
-        
         """
         ax40.plot_date(t_days,B_mag,fmt='-',linewidth=1.0)
         ax41.plot_date(t_days,np.array(theta)*180/np.pi,fmt='-',linewidth=1.0)
@@ -549,13 +589,13 @@ if __name__=="__main__":
         ax41.set_ylabel(r"$\theta$ (degs)")
         ax42.set_ylabel(r"$\phi$ (degs)")
         ax42.set_xlabel("Time")
-        
-        ax5.plot_date((subintervals[:,0]+subintervals[:,1])/2/3600/24,B_x1_angle,fmt='-',linewidth=1.0)
-        ax5.plot_date((subintervals[:,0]+subintervals[:,1])/2/3600/24,np.array(len(subintervals[:,0])*[30]),fmt='-',linewidth=1.0)
+        """
+        ax5.plot_date(sitv_midpoints,np.array(inst1.B_x1_angle)*180/np.pi,fmt='-',linewidth=1.0)
+        ax5.plot_date(sitv_midpoints,np.array(len(sitv_midpoints)*[30]),fmt='-',linewidth=1.0)
         ax5.set_ylabel("B_D_angle (degs)")
         ax5.set_title("Time Series of Angle between MV dir. and B-field dir.")
         ax5.set_xlabel("Time")
-        """
+
         
         ax61.plot_date(sitv_midpoints,np.abs(np.array(inst1.phi_PN16))*180/np.pi,fmt='-',linewidth=1.0)
         ax62.plot_date(sitv_midpoints,np.array(inst1.theta_D_PN16)*180/np.pi,fmt='-',linewidth=1.0)
@@ -570,8 +610,17 @@ if __name__=="__main__":
         ax71.plot_date(sitv_midpoints,[30]*len(inst1.theta_B_PN16),fmt='-',linewidth=1.0)
         ax71.plot_date(sitv_midpoints,[-30]*len(inst1.theta_B_PN16),fmt='-',linewidth=1.0)    
         ax72.plot_date(sitv_midpoints,inst1.Bxy_fluct_PN16,fmt='-',linewidth=1.0)    
+        ax72.plot_date(sitv_midpoints,[C_xy]*len(inst1.Bxy_fluct_PN16),fmt='-',linewidth=1.0)          
         ax71.set_ylabel(r"$\theta_{B}$")
         ax72.set_ylabel(r"$\frac{\delta B_{xy}}{B_{xy}}$")
+
+        ax81.plot_date(sitv_midpoints,np.array(inst1.lam1_lam2)*180/np.pi,fmt='-',linewidth=1.0)
+        ax81.plot_date(sitv_midpoints,[C_lam12]*len(inst1.lam1_lam2),fmt='-',linewidth=1.0) 
+        ax82.plot_date(sitv_midpoints,inst1.lam3_lam2,fmt='-',linewidth=1.0)    
+        ax82.plot_date(sitv_midpoints,[C_lam32]*len(inst1.lam3_lam2),fmt='-',linewidth=1.0)   
+        ax81.set_ylabel(r"$\frac{\lambda_{1}}{\lambda_{2}}$")
+        ax82.set_ylabel(r"$\frac{\lambda_{3}}{\lambda_{2}}$")        
+        
         
         plt.show()        
 

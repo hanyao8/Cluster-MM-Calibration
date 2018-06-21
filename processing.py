@@ -245,6 +245,7 @@ class processing:
             B_dir = np.array([self.Bx_sitv_mean[i],self.By_sitv_mean[i],self.Bz_sitv_mean[i]])
             B_dir /= np.sqrt(self.Bx_sitv_mean[i]**2+self.By_sitv_mean[i]**2+self.Bz_sitv_mean[i]**2)
             B_dir_xy = np.sqrt(B_dir[0]**2+B_dir[1]**2)
+            
             """
             if i%1000==0:            
                 print(i)
@@ -253,16 +254,16 @@ class processing:
                 print(B_dir_xy)
                 print(np.arctan2(B_dir[2],B_dir_xy))     
             """
-            self.B_x1_angle.append( np.arccos(np.dot(x1,B_dir)) * 180/np.pi )
-            #self.B_x1_angle.append( np.arccos(abs(np.dot(x1,B_dir))) * 180/np.pi )
 
             self.theta_D.append( (np.arctan2( [x1_xy],[x1[2]] ))[0])
             self.phi_D.append( (np.arctan2( [x1[1]],[x1[0] ]) )[0] )
             
             if SETTING=='mmode_search':
+                self.B_x1_angle.append( np.arccos(abs(np.dot(x1,B_dir)))  )
                 self.phi_PN16.append( np.arccos(abs(np.dot([x1[0],x1[1]],[B_dir[0],B_dir[1]]) \
                                                  /np.sqrt(x1[0]**2+x1[1]**2)/np.sqrt(B_dir[0]**2+B_dir[1]**2) )))            
             else:
+                self.B_x1_angle.append( np.arccos(np.dot(x1,B_dir))  )
                 self.phi_PN16.append( np.arccos(np.dot([x1[0],x1[1]],[B_dir[0],B_dir[1]]) \
                                                  /np.sqrt(x1[0]**2+x1[1]**2)/np.sqrt(B_dir[0]**2+B_dir[1]**2) ) )
             
