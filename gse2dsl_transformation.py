@@ -7,6 +7,7 @@ Created on Wed Jun 20 15:02:33 2018
 
 #gse2dsl transformation
 
+import io
 import os
 import numpy as np
 #import csv
@@ -75,10 +76,11 @@ for i in range(0,len(t_days)):
 theta_gse = np.array([np.pi/2]*len(lat_gse_newres)) - np.array(lat_gse_newres)/180*np.pi
 phi_gse = np.array(long_gse_newres)/180*np.pi
 
-#Bx_dsl = []
-#By_dsl = []
-#Bz_dsl = []
+dsldata_file = io.open(os.getcwd() +"\\DSL_"+ gsedata_file_name + ".csv",'w')
+
 for i in range(0,len(t_days)):
+    if i%10000==0:
+        print(i)
     z_dsl = np.array(([np.sin(theta_gse[i])*np.cos(phi_gse[i]),\
                   np.sin(theta_gse[i])*np.sin(phi_gse[i]),\
                   np.cos(theta_gse[i])]))
@@ -91,6 +93,20 @@ for i in range(0,len(t_days)):
     
     B_gse = [Bx_gse[i],By_gse[i],Bz_gse[i]]
     B_dsl = np.matmul(T,B_gse)
+    
+    data_row_str = t[i] +","+ \
+                    str(df_arr[i][1]) +","+ \
+                    str(B_dsl[0]) +","+ \
+                    str(B_dsl[1]) +","+ \
+                    str(B_dsl[2]) +","+ \
+                    str(np.sqrt(np.dot(B_dsl,B_dsl))) +","+ \
+                    str(df_arr[i][6]) +","+ \
+                    str(df_arr[i][7]) +","+ \
+                    str(df_arr[i][8]) +","+ \
+                    str(df_arr[i][9]) +","+ \
+                    str(df_arr[i][10]) + \
+                    "\n"
+    dsldata_file.write(data_row_str)
     
     
     

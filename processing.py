@@ -83,7 +83,7 @@ class processing:
         t_secs= t_days*24*3600
 
         data_start_index = np.argmax(t_days>data_start_time)
-        data_end_index = np.argmax(t_days>data_end_time)-1
+        data_end_index = np.argmax(t_days>data_end_time)
              
         
         t = t[data_start_index:data_end_index]
@@ -93,7 +93,7 @@ class processing:
         B_mag = B_mag[data_start_index:data_end_index]
         
 
-        print(t[0])
+        #print(t[0])
         self.t=t
 
         self.B_x=B_x
@@ -169,19 +169,31 @@ class processing:
                 Bmag_sitv.append(self.B_mag[si_start:si_end])
                 Bxy_sitv.append(B_xy[si_start:si_end])
                 
-                self.Bx_sitv_mean.append(np.mean(Bx_sitv[-1]))
-                self.By_sitv_mean.append(np.mean(By_sitv[-1]))
-                self.Bz_sitv_mean.append(np.mean(Bz_sitv[-1]))
-                
+                self.Bx_sitv_mean.append(np.mean(self.B_x[si_start:si_end]))
+                self.By_sitv_mean.append(np.mean(self.B_y[si_start:si_end]))
+                self.Bz_sitv_mean.append(np.mean(self.B_z[si_start:si_end]))
+                """
+                if i%1000==0:
+                    print(si_start)
+                    print(si_end)
+                    print(np.mean(self.B_x[si_start:si_end]))
+                    #print(self.Bx_sitv_mean[i])
+                """
                 Bxy_sitv_min.append(min(Bxy_sitv[-1]))
                 Bxy_sitv_max.append(max(Bxy_sitv[-1]))
                 self.Bxy_sitv_mean.append(np.mean(Bxy_sitv[-1]))
-                
+
+        self.Bx_sitv_mean = np.array(self.Bx_sitv_mean)
+        self.By_sitv_mean = np.array(self.By_sitv_mean)
+        self.Bz_sitv_mean = np.array(self.Bz_sitv_mean)             
                 
         subintervals = np.array(gapadj_subintervals.copy())
         self.subintervals = subintervals
-
-
+        
+        """
+        print(self.Bx_sitv_mean)
+        """
+        
         self.B_x1_angle = []
         self.theta_D = []
         self.phi_D = []
@@ -199,9 +211,9 @@ class processing:
     
             lam1_index = np.argmax(eigen[0])
             lam3_index = np.argmin(eigen[0])
-            for i in [0,1,2]:
-                if i!=lam1_index and i!=lam3_index:
-                    lam2_index=i
+            for eigenindex in [0,1,2]:
+                if eigenindex!=lam1_index and eigenindex!=lam3_index:
+                    lam2_index=eigenindex
                     break
                 
             lam1 = eigen[0][lam1_index]
@@ -226,23 +238,40 @@ class processing:
                     x1 = -x1
             
             x1_prev = x1.copy()
+            
+
 
     
             B_dir = np.array([self.Bx_sitv_mean[i],self.By_sitv_mean[i],self.Bz_sitv_mean[i]])
             B_dir /= np.sqrt(self.Bx_sitv_mean[i]**2+self.By_sitv_mean[i]**2+self.Bz_sitv_mean[i]**2)
             B_dir_xy = np.sqrt(B_dir[0]**2+B_dir[1]**2)
-            
+            """
+            if i%1000==0:            
+                print(i)
+                print(self.Bx_sitv_mean[i])
+                print(self.Bx_sitv_mean)
+                print(B_dir_xy)
+                print(np.arctan2(B_dir[2],B_dir_xy))     
+            """
             self.B_x1_angle.append( np.arccos(np.dot(x1,B_dir)) * 180/np.pi )
             #self.B_x1_angle.append( np.arccos(abs(np.dot(x1,B_dir))) * 180/np.pi )
 
             self.theta_D.append( (np.arctan2( [x1_xy],[x1[2]] ))[0])
             self.phi_D.append( (np.arctan2( [x1[1]],[x1[0] ]) )[0] )
             
-            self.phi_PN16.append( np.arccos(np.dot([x1[0],x1[1]],[B_dir[0],B_dir[1]]) \
-                                             /np.sqrt(x1[0]**2+x1[1]**2)/np.sqrt(B_dir[0]**2+B_dir[1]**2) ) )
+            if SETTING=='mmode_search':
+                self.phi_PN16.append( np.arccos(abs(np.dot([x1[0],x1[1]],[B_dir[0],B_dir[1]]) \
+                                                 /np.sqrt(x1[0]**2+x1[1]**2)/np.sqrt(B_dir[0]**2+B_dir[1]**2) )))            
+            else:
+                self.phi_PN16.append( np.arccos(np.dot([x1[0],x1[1]],[B_dir[0],B_dir[1]]) \
+                                                 /np.sqrt(x1[0]**2+x1[1]**2)/np.sqrt(B_dir[0]**2+B_dir[1]**2) ) )
             
+            #if i%1000==0:
+                #print(B_dir[2])
+                #print(B_dir_xy)
+                #print(np.arctan2(B_dir[2],B_dir_xy))
             self.theta_B_PN16.append( np.arctan2(B_dir[2],B_dir_xy) )
-            self.theta_D_PN16.append( np.arctan2(x1[2],x1_xy) )          
+            self.theta_D_PN16.append( np.arctan2(x1[2],x1_xy) )
                 
         if SETTING=='peakness':
             widths = np.linspace(1, 61,500)
