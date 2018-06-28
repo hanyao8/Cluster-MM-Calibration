@@ -32,19 +32,26 @@ from sklearn.neighbors.kde import KernelDensity
 
 ################################################################################
 
-ARTIFICIAL_OFFSET = False
+ARTIFICIAL_OFFSET = True
 PLOT= True
-sitv_in_sheath_frac_analysis = True
+sitv_in_sheath_frac_analysis = False
 
 artificial_Bz_offset = 5.0 #nT (in DSL coordinates)
+if not(ARTIFICIAL_OFFSET):
+    artificial_Bz_offset = 0.0
 
 #csv_file_name = "C1_CP_FGM_5VPS__20060301_103000_20060301_113000_V140304"
-csv_file_name = "DSL_C3_CP_FGM_5VPS__20060301_000000_20060302_000000_V140305"
+#csv_file_name = "DSL_C3_CP_FGM_5VPS__20060301_000000_20060302_000000_V140305"
+csv_file_name = "DSL_C3_CP_FGM_5VPS__20061103_000000_20061104_000000_V140305"
 
-data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T00:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
-data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T23:59:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+#data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T00:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+#data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T23:59:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-11-03T21:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-11-03T22:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+#data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-11-03T00:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+#data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-11-03T23:59:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 
-t_int = 180
+t_int = 300
 shift = 10
 
 C_xy = 0.3
@@ -65,8 +72,8 @@ df_arr = csv_df.values
 
 
 ################################################################################
-    
-######################## FUNCTIONS ##############################################
+
+######################## FUNCTIONS #############################################
 
 ################################################################################
 
@@ -272,10 +279,12 @@ Mmode_count_SLD08 = 0
 Mmode_indices_PN16 = []
 Mmode_indices_SLD08 = []
 Mmode_indices_overlapping = []
-
+Mmode_indices_PN16_only = []
+Mmode_indices_SLD08_only = []
 
 
 O_z = []
+O_z_wfill = np.array([])
 #using PN16 criteria 
 
 for i in range(0,len(subintervals)):
@@ -350,6 +359,8 @@ for i in range(0,len(subintervals)):
     theta_B_PN16.append( np.arctan2(B_dir[2],B_dir_xy) )
     theta_D_PN16.append( np.arctan2(x1[2],x1_xy) )
     
+    PN16_satisfy=False
+    SLD08_satisfy=False
     
     if Bxy_fluct_PN16[i]>C_xy:
         if abs(phi_PN16[i]) < C_phi:
@@ -357,21 +368,35 @@ for i in range(0,len(subintervals)):
                 if abs(theta_D_PN16[i]) < C_D:
                     Mmode_indices_PN16.append(i)
                     Mmode_count_PN16+=1
+                    PN16_satisfy=True
                     
-                    if Bz_sitv_mean[i] > 0:
-                        O_z.append(+abs(Bz_sitv_mean[i]) - abs(x1[2])/x1_xy*Bxy_sitv_mean[i] )
-                    elif Bz_sitv_mean[i] < 0:
-                        O_z.append(-abs(Bz_sitv_mean[i]) + abs(x1[2])/x1_xy*Bxy_sitv_mean[i] )
+
                     
     if lam1_lam2[i] > C_lam12:
         if lam3_lam2[i] > C_lam32:
             if B_x1_angle[i] < C_MV_B:
                 Mmode_indices_SLD08.append(i)
                 Mmode_count_SLD08+=1
-                
-                if len(Mmode_indices_PN16)>0 and len(Mmode_indices_SLD08)>0:
-                    if Mmode_indices_PN16[-1]==Mmode_indices_SLD08[-1]:
-                        Mmode_indices_overlapping.append(i)    
+                SLD08_satisfy=True
+    
+    if PN16_satisfy and SLD08_satisfy:
+        if len(Mmode_indices_PN16)>0 and len(Mmode_indices_SLD08)>0:
+            if Mmode_indices_PN16[-1]==Mmode_indices_SLD08[-1]:
+                Mmode_indices_overlapping.append(i)    
+    
+    if PN16_satisfy:
+        if Bz_sitv_mean[i] > 0:
+            O_z.append(+abs(Bz_sitv_mean[i]) - abs(x1[2])/x1_xy*Bxy_sitv_mean[i] )
+        elif Bz_sitv_mean[i] < 0:
+            O_z.append(-abs(Bz_sitv_mean[i]) + abs(x1[2])/x1_xy*Bxy_sitv_mean[i] )
+        O_z_wfill = np.append(O_z_wfill,O_z[-1])
+    else:
+        O_z_wfill = np.append(O_z_wfill,0.0)
+        
+    if PN16_satisfy and not(SLD08_satisfy):
+        Mmode_indices_PN16_only.append(i)
+    if SLD08_satisfy and not(PN16_satisfy):
+        Mmode_indices_SLD08_only.append(i)
 
 ################################################################################
     
@@ -389,6 +414,8 @@ Mmode_sitv_times_PN16 = []
 Mmode_sitv_times_SLD08 = []
 Mmode_sitv_times_PN16_days = []
 Mmode_sitv_times_SLD08_days = []
+Mmode_sitv_times_PN16_only = []
+Mmode_sitv_times_SLD08_only = []
 
 for i in range(0,len(Mmode_indices_PN16)):
     Mmode_sitv_times_PN16.append(matplotlib.dates.num2date(sitv_midpoints_days[Mmode_indices_PN16[i]]))
@@ -396,17 +423,23 @@ for i in range(0,len(Mmode_indices_PN16)):
 for i in range(0,len(Mmode_indices_SLD08)):
     Mmode_sitv_times_SLD08.append(matplotlib.dates.num2date(sitv_midpoints_days[Mmode_indices_SLD08[i]]))   
     Mmode_sitv_times_SLD08_days.append(sitv_midpoints_days[Mmode_indices_SLD08[i]])
+for i in range(0,len(Mmode_indices_PN16_only)):
+    Mmode_sitv_times_PN16_only.append(matplotlib.dates.num2date(sitv_midpoints_days[Mmode_indices_PN16_only[i]]))
+for i in range(0,len(Mmode_indices_SLD08_only)):
+    Mmode_sitv_times_SLD08_only.append(matplotlib.dates.num2date(sitv_midpoints_days[Mmode_indices_SLD08_only[i]]))   
 
-Mmode_sitv_times_PN16_only = Mmode_sitv_times_PN16
-Mmode_sitv_times_SLD08_only = Mmode_sitv_times_SLD08
+
 Mmode_sitv_times_overlapping = [] 
 Mmode_sitv_times_overlapping_days = [] 
 for i in range(0,len(Mmode_indices_overlapping)):        
-    Mmode_sitv_times_overlapping.append(matplotlib.dates.num2date(sitv_midpoints_days[Mmode_indices_overlapping[i]])) 
+    Mmode_sitv_times_overlapping.append(matplotlib.dates.num2date(sitv_midpoints_days[Mmode_indices_overlapping[i]]))
     Mmode_sitv_times_overlapping_days.append(sitv_midpoints_days[Mmode_indices_overlapping[i]])
-    Mmode_sitv_times_PN16_only.remove(matplotlib.dates.num2date(sitv_midpoints_days[Mmode_indices_overlapping[i]]))
-    Mmode_sitv_times_SLD08_only.remove(matplotlib.dates.num2date(sitv_midpoints_days[Mmode_indices_overlapping[i]]))
-    
+
+print("PN16:",Mmode_count_PN16)
+print("SLD08:",Mmode_count_SLD08)
+print("overlapping:",len(Mmode_indices_overlapping))
+print("PN16 only:",len(Mmode_sitv_times_PN16_only))
+print("SLD08 only:",len(Mmode_sitv_times_SLD08_only))
     
 if sitv_in_sheath_frac_analysis:
     sheath_start_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T06:58:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
@@ -416,11 +449,7 @@ if sitv_in_sheath_frac_analysis:
     SLD08_frac_in_sheath = (np.argmax(np.array(Mmode_sitv_times_SLD08_days)>sheath_end_time) - np.argmax(np.array(Mmode_sitv_times_SLD08_days)>sheath_start_time) )/Mmode_count_SLD08  
     overlapping_frac_in_sheath = (np.argmax(np.array(Mmode_sitv_times_overlapping_days)>sheath_end_time) - np.argmax(np.array(Mmode_sitv_times_overlapping_days)>sheath_start_time) )/len(Mmode_indices_overlapping)
     
-    print("PN16:",Mmode_count_PN16)
-    print("SLD08:",Mmode_count_SLD08)
-    print("overlapping:",len(Mmode_indices_overlapping))
-    print("PN16 only:",len(Mmode_sitv_times_PN16_only))
-    print("SLD08 only:",len(Mmode_sitv_times_SLD08_only))
+
     
     print(PN16_frac_in_sheath)
     print(SLD08_frac_in_sheath)
@@ -432,14 +461,31 @@ if sitv_in_sheath_frac_analysis:
 O_z_T = np.transpose(np.array([O_z]))
 kde= KernelDensity(kernel='gaussian',bandwidth=1.0).fit(O_z_T)
 log_pdf = kde.score_samples(O_z_T)
+pdf = np.exp(log_pdf)
 
+O_z_wfill_T = np.transpose(np.array([O_z_wfill]))
+kde_wfill= KernelDensity(kernel='gaussian',bandwidth=1.0).fit(O_z_wfill_T)
+log_pdf_wfill = kde_wfill.score_samples(O_z_wfill_T)
+pdf_wfill = np.exp(log_pdf_wfill)
         
-
-
-
-
-
-
+O_z_PN16_only = []
+O_z_SLD08_only = []
+O_z_overlapping = []
+pdf_PN16_only = []
+pdf_SLD08_only = []
+pdf_overlapping = []
+for i in range(0,len(Mmode_indices_PN16_only)):
+    O_z_PN16_only.append(O_z_wfill[Mmode_indices_PN16_only[i]] )
+for i in range(0,len(Mmode_indices_SLD08_only)):
+    O_z_SLD08_only.append(O_z_wfill[Mmode_indices_SLD08_only[i]] )
+for i in range(0,len(Mmode_indices_overlapping)):
+    O_z_overlapping.append(O_z_wfill[Mmode_indices_overlapping[i]] )
+for i in range(0,len(Mmode_indices_PN16_only)):
+    pdf_PN16_only.append(pdf_wfill[Mmode_indices_PN16_only[i]] )
+for i in range(0,len(Mmode_indices_SLD08_only)):
+    pdf_SLD08_only.append(pdf_wfill[Mmode_indices_SLD08_only[i]] )
+for i in range(0,len(Mmode_indices_overlapping)):
+    pdf_overlapping.append(pdf_wfill[Mmode_indices_overlapping[i]] )
 
 
 
@@ -451,7 +497,6 @@ log_pdf = kde.score_samples(O_z_T)
 ################################################################################
 
 if PLOT:
-    
     
     sitv_midpoints = (subintervals[:,0]+subintervals[:,1])/2/3600/24
     
@@ -493,7 +538,7 @@ if PLOT:
     
     
     ax1.plot_date(t_days,B_mag,fmt='-',linewidth=1.0,color='black')
-    ax1.set_title("B-field magnitude time series")
+    ax1.set_title(r"B-field magnitude time series $(t_{si}=%d,t_{sh}=%d)$"%(t_int,shift))
     ax1.set_xlabel("Time")
     ax1.set_ylabel(r"$B_{mag}$ (nT)")
     """
@@ -511,8 +556,9 @@ if PLOT:
         ax1.axvline(Mmode_sitv_times_SLD08_only[i],alpha=0.4,color='green',linewidth=1.0)    
     for i in range(0,len(Mmode_sitv_times_overlapping)):
         ax1.axvline(Mmode_sitv_times_overlapping[i],alpha=0.4,color='blue',linewidth=1.0)    
-    ax1.axvline(Mmode_sitv_times_PN16[0],alpha=0.4,color='orange',linewidth=1.0,label='PN16 only')
-    ax1.axvline(Mmode_sitv_times_SLD08[0],alpha=0.4,color='green',linewidth=1.0,label='SLD08(no[4]) only')    
+    ax1.axvline(Mmode_sitv_times_PN16_only[0],alpha=0.4,color='orange',linewidth=1.0,label='PN16 only')
+    if len(Mmode_sitv_times_SLD08_only) > 0:
+        ax1.axvline(Mmode_sitv_times_SLD08_only[0],alpha=0.4,color='green',linewidth=1.0,label='SLD08(no[4]) only')    
     ax1.axvline(Mmode_sitv_times_overlapping[0],alpha=0.4,color='blue',linewidth=1.0,label='PN16&SLD08(no[4])')    
     ax1.legend()
     
@@ -580,11 +626,11 @@ if PLOT:
     ax82.set_ylabel(r"$\frac{\lambda_{3}}{\lambda_{2}}$")     
     
     #ax9.hist(O_z,bins=25,normed=True)
-    if ARTIFICIAL_OFFSET:
-        ax9.scatter(O_z,np.exp(log_pdf),s=1.0,color='orange',label="%.2fnT artificial offset"%(artificial_Bz_offset))
-    else:
-        ax9.scatter(O_z,np.exp(log_pdf),s=1.0,color='orange',label="0nT artificial offset")
-    ax9.set_title("Prob. Density from KDE: C3 01/03/2006, %d PN16 intervals"%(Mmode_count_PN16))
+    ax9.scatter(O_z_PN16_only,pdf_PN16_only,s=1.0,color='orange',label="PN16 only")
+    if len(Mmode_sitv_times_SLD08_only) > 0:
+        ax9.scatter(O_z_SLD08_only,pdf_SLD08_only,s=1.0,color='green',label="SLD08 only")
+    ax9.scatter(O_z_overlapping,pdf_overlapping,s=1.0,color='blue',label="PN16&SLD08(no[4])")
+    ax9.set_title("Prob. Density from KDE: C3 01/03/2006, %d PN16 intervals, $(t_{si}=%d,t_{sh}=%d)$ %.2fnT artificial offset"%(Mmode_count_PN16,t_int,shift,artificial_Bz_offset))
     ax9.set_ylabel("Prob. Density")
     ax9.set_xlabel(r"$O_{z}$ (nT)")
     ax9.legend()
