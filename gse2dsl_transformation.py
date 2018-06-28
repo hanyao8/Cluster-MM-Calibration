@@ -22,15 +22,15 @@ SETTING='not_themis_validation'
 
 gsedatavar_names = ['Time','Half Interval','Bx','By','Bz','Bt','x','y','z','range','tm']
 #gsedata_file_name = "C3_CP_FGM_5VPS__20060301_000000_20060302_000000_V140305"
-gsedata_file_name = "C3_CP_FGM_5VPS__20060302_000000_20060307_000000_V140305"
+gsedata_file_name = "C3_CP_FGM_5VPS__20060307_000000_20060312_000000_V140305"
 gsedata_df = pd.read_csv(os.getcwd()+"\\"+ gsedata_file_name + ".csv",names=gsedatavar_names)
 #gsedata_df = pd.read_csv(os.getcwd()+"\\data\\"+ gsedata_file_name + ".csv",names=gsedatavar_names)
 gsedata_df.head()
-gsedata_arr = gsedata_df.values   
+gsedata_arr = gsedata_df.values
 
 spinaxisvar_names = ['Time','Lat','Long']
 #spinaxis_file_name = "C3_CP_AUX_SPIN_AXIS__20060301_000000_20060302_000000_V130205"
-spinaxis_file_name = "C3_CP_AUX_SPIN_AXIS__20060302_000000_20060307_000000_V130205"
+spinaxis_file_name = "C3_CP_AUX_SPIN_AXIS__20060307_000000_20060312_000000_V130205"
 spinaxis_df = pd.read_csv(os.getcwd()+"\\"+ spinaxis_file_name + ".csv",names=spinaxisvar_names)
 #spinaxis_df = pd.read_csv(os.getcwd()+"\\data\\"+ spinaxis_file_name + ".csv",names=spinaxisvar_names)
 spinaxis_df.head()

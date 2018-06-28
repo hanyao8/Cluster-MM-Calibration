@@ -42,14 +42,18 @@ if not(ARTIFICIAL_OFFSET):
 
 #csv_file_name = "C1_CP_FGM_5VPS__20060301_103000_20060301_113000_V140304"
 #csv_file_name = "DSL_C3_CP_FGM_5VPS__20060301_000000_20060302_000000_V140305"
-csv_file_name = "DSL_C3_CP_FGM_5VPS__20061103_000000_20061104_000000_V140305"
+#csv_file_name = "DSL_C3_CP_FGM_5VPS__20061103_000000_20061104_000000_V140305"
+csv_file_name = "DSL_C3_CP_FGM_5VPS__20060302_000000_20060307_000000_V140305"
+
 
 #data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T00:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 #data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T23:59:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
-data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-11-03T21:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
-data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-11-03T22:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+#data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-11-03T21:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+#data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-11-03T22:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 #data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-11-03T00:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 #data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-11-03T23:59:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-03-02T00:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-03-03T23:59:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 
 t_int = 300
 shift = 10
@@ -76,6 +80,9 @@ df_arr = csv_df.values
 ######################## FUNCTIONS #############################################
 
 ################################################################################
+
+if csv_file_name[:3]!='DSL':
+    print("Ensure B-field data is in DSL coordinates")
 
 def varlist(data):
 #Calculate the mean of the magnetic field components and return the variance matrix as a (3,3) array
@@ -499,43 +506,9 @@ for i in range(0,len(Mmode_indices_overlapping)):
 if PLOT:
     
     sitv_midpoints = (subintervals[:,0]+subintervals[:,1])/2/3600/24
-    
+
     f1=plt.figure()
     ax1 = f1.add_subplot(111)
-    
-    f2=plt.figure()
-    ax21 = f2.add_subplot(311)
-    ax22 = f2.add_subplot(312)
-    ax23 = f2.add_subplot(313)
-    
-    f3=plt.figure()
-    ax31 = f3.add_subplot(311)
-    ax32 = f3.add_subplot(312)
-    ax33 = f3.add_subplot(313)
-    
-    #f4=plt.figure()
-    #ax40 = f4.add_subplot(311)
-    #ax41 = f4.add_subplot(312)
-    #ax42 = f4.add_subplot(313)
-    
-    f5=plt.figure()
-    ax5 = f5.add_subplot(111)
-    
-    f6=plt.figure()
-    ax61 = f6.add_subplot(211)
-    ax62 = f6.add_subplot(212)
-    
-    f7=plt.figure()
-    ax71 = f7.add_subplot(211)
-    ax72 = f7.add_subplot(212)        
-    
-    f8=plt.figure()
-    ax81 = f8.add_subplot(211)
-    ax82 = f8.add_subplot(212)      
-
-    f9=plt.figure()
-    ax9 = f9.add_subplot(111)
-    
     
     ax1.plot_date(t_days,B_mag,fmt='-',linewidth=1.0,color='black')
     ax1.set_title(r"B-field magnitude time series $(t_{si}=%d,t_{sh}=%d)$"%(t_int,shift))
@@ -561,6 +534,11 @@ if PLOT:
         ax1.axvline(Mmode_sitv_times_SLD08_only[0],alpha=0.4,color='green',linewidth=1.0,label='SLD08(no[4]) only')    
     ax1.axvline(Mmode_sitv_times_overlapping[0],alpha=0.4,color='blue',linewidth=1.0,label='PN16&SLD08(no[4])')    
     ax1.legend()
+
+    f2=plt.figure()
+    ax21 = f2.add_subplot(311)
+    ax22 = f2.add_subplot(312)
+    ax23 = f2.add_subplot(313)
     
     ax21.plot(t_days,B_x,linewidth=1.0)
     ax21.plot_date(sitv_midpoints,Bx_sitv_mean,fmt='-',linewidth=1.0)
@@ -574,6 +552,12 @@ if PLOT:
     ax23.set_ylabel(r"$B_{z}$ (nT)")
     ax23.set_xlabel("Time")
     
+
+    
+    f3=plt.figure()
+    ax31 = f3.add_subplot(311)
+    ax32 = f3.add_subplot(312)
+    ax33 = f3.add_subplot(313)
     
     ax31.plot_date(t_days,B_x/B_mag,fmt='-',linewidth=1.0)
     ax31.set_ylabel(r"$B_{x}$ (nT)")
@@ -583,7 +567,11 @@ if PLOT:
     ax33.plot_date(t_days,B_z/B_mag,fmt='-',linewidth=1.0)
     ax33.set_ylabel(r"$B_{z}$ (nT)")
     ax33.set_xlabel("Time")
-    
+
+    #f4=plt.figure()
+    #ax40 = f4.add_subplot(311)
+    #ax41 = f4.add_subplot(312)
+    #ax42 = f4.add_subplot(313)    
     """
     ax40.plot_date(t_days,B_mag,fmt='-',linewidth=1.0)
     ax41.plot_date(t_days,np.array(theta)*180/np.pi,fmt='-',linewidth=1.0)
@@ -594,12 +582,19 @@ if PLOT:
     ax42.set_ylabel(r"$\phi$ (degs)")
     ax42.set_xlabel("Time")
     """
+
+    f5=plt.figure()
+    ax5 = f5.add_subplot(111)
+    
     ax5.plot_date(sitv_midpoints,np.array(B_x1_angle)*180/np.pi,fmt='-',linewidth=1.0)
     ax5.plot_date(sitv_midpoints,np.array(len(sitv_midpoints)*[30]),fmt='-',linewidth=1.0)
     ax5.set_ylabel("B_D_angle (degs)")
     ax5.set_title("Time Series of Angle between MV dir. and B-field dir.")
     ax5.set_xlabel("Time")
     
+    f6=plt.figure()
+    ax61 = f6.add_subplot(211)
+    ax62 = f6.add_subplot(212)
     
     ax61.plot_date(sitv_midpoints,np.abs(np.array(phi_PN16))*180/np.pi,fmt='-',linewidth=1.0)
     ax62.plot_date(sitv_midpoints,np.array(theta_D_PN16)*180/np.pi,fmt='-',linewidth=1.0)
@@ -609,6 +604,9 @@ if PLOT:
     ax61.set_ylabel(r"$\phi$")
     ax62.set_ylabel(r"$\theta_{D}$")
     
+    f7=plt.figure()
+    ax71 = f7.add_subplot(211)
+    ax72 = f7.add_subplot(212)   
     
     ax71.plot_date(sitv_midpoints,np.array(theta_B_PN16)*180/np.pi,fmt='-',linewidth=1.0)
     ax71.plot_date(sitv_midpoints,[30]*len(theta_B_PN16),fmt='-',linewidth=1.0)
@@ -618,13 +616,20 @@ if PLOT:
     ax71.set_ylabel(r"$\theta_{B}$")
     ax72.set_ylabel(r"$\frac{\delta B_{xy}}{B_{xy}}$")
     
+    
+    f8=plt.figure()
+    ax81 = f8.add_subplot(211)
+    ax82 = f8.add_subplot(212)          
     ax81.plot_date(sitv_midpoints,np.array(lam1_lam2),fmt='-',linewidth=1.0)
     ax81.plot_date(sitv_midpoints,[C_lam12]*len(lam1_lam2),fmt='-',linewidth=1.0) 
     ax82.plot_date(sitv_midpoints,np.array(lam3_lam2),fmt='-',linewidth=1.0)    
     ax82.plot_date(sitv_midpoints,[C_lam32]*len(lam3_lam2),fmt='-',linewidth=1.0)   
     ax81.set_ylabel(r"$\frac{\lambda_{1}}{\lambda_{2}}$")
     ax82.set_ylabel(r"$\frac{\lambda_{3}}{\lambda_{2}}$")     
-    
+
+
+    f9=plt.figure()
+    ax9 = f9.add_subplot(111)    
     #ax9.hist(O_z,bins=25,normed=True)
     ax9.scatter(O_z_PN16_only,pdf_PN16_only,s=1.0,color='orange',label="PN16 only")
     if len(Mmode_sitv_times_SLD08_only) > 0:
