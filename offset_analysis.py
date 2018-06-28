@@ -36,24 +36,35 @@ ARTIFICIAL_OFFSET = True
 PLOT= True
 sitv_in_sheath_frac_analysis = False
 
-artificial_Bz_offset = 5.0 #nT (in DSL coordinates)
+artificial_Bz_offset = 5.0 #nT (in DSL coordinates- hence in spin axis direction)
 if not(ARTIFICIAL_OFFSET):
     artificial_Bz_offset = 0.0
 
-#csv_file_name = "C1_CP_FGM_5VPS__20060301_103000_20060301_113000_V140304"
-#csv_file_name = "DSL_C3_CP_FGM_5VPS__20060301_000000_20060302_000000_V140305"
 #csv_file_name = "DSL_C3_CP_FGM_5VPS__20061103_000000_20061104_000000_V140305"
+#csv_file_name = "DSL_C3_CP_FGM_5VPS__20060301_000000_20060302_000000_V140305"
 csv_file_name = "DSL_C3_CP_FGM_5VPS__20060302_000000_20060307_000000_V140305"
 
-
 #data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T00:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
-#data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T23:59:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+#data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T22:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 #data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-11-03T21:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 #data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-11-03T22:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 #data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-11-03T00:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 #data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-11-03T23:59:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
-data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-03-02T00:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
-data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-03-03T23:59:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+
+yyyy_s = '2006'
+mm_s = '03'
+dd_s = '04'
+hh24_s = '10'
+
+yyyy_e = '2006'
+mm_e = '03'
+dd_e = '04'
+hh24_e = '16'
+
+plot_time_text = yyyy_s+'/'+mm_s+'/'+dd_s+' '+hh24_s+'~'+hh24_e
+
+data_start_time = matplotlib.dates.date2num(datetime.strptime(yyyy_s+'-'+mm_s+'-'+dd_s+'T'+hh24_s+':00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+data_end_time = matplotlib.dates.date2num(datetime.strptime(yyyy_e+'-'+mm_e+'-'+dd_e+'T'+hh24_e+':00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 
 t_int = 300
 shift = 10
@@ -390,7 +401,7 @@ for i in range(0,len(subintervals)):
         if len(Mmode_indices_PN16)>0 and len(Mmode_indices_SLD08)>0:
             if Mmode_indices_PN16[-1]==Mmode_indices_SLD08[-1]:
                 Mmode_indices_overlapping.append(i)    
-    
+
     if PN16_satisfy:
         if Bz_sitv_mean[i] > 0:
             O_z.append(+abs(Bz_sitv_mean[i]) - abs(x1[2])/x1_xy*Bxy_sitv_mean[i] )
@@ -399,6 +410,7 @@ for i in range(0,len(subintervals)):
         O_z_wfill = np.append(O_z_wfill,O_z[-1])
     else:
         O_z_wfill = np.append(O_z_wfill,0.0)
+        
         
     if PN16_satisfy and not(SLD08_satisfy):
         Mmode_indices_PN16_only.append(i)
@@ -410,6 +422,7 @@ for i in range(0,len(subintervals)):
 ######################## PLOTTING ##############################################
 
 ################################################################################
+Mmode_count_overlapping = len(Mmode_indices_overlapping)
 
 O_z = np.array(O_z)
 
@@ -470,31 +483,50 @@ kde= KernelDensity(kernel='gaussian',bandwidth=1.0).fit(O_z_T)
 log_pdf = kde.score_samples(O_z_T)
 pdf = np.exp(log_pdf)
 
-O_z_wfill_T = np.transpose(np.array([O_z_wfill]))
-kde_wfill= KernelDensity(kernel='gaussian',bandwidth=1.0).fit(O_z_wfill_T)
-log_pdf_wfill = kde_wfill.score_samples(O_z_wfill_T)
-pdf_wfill = np.exp(log_pdf_wfill)
         
 O_z_PN16_only = []
-O_z_SLD08_only = []
 O_z_overlapping = []
 pdf_PN16_only = []
-pdf_SLD08_only = []
 pdf_overlapping = []
+
+i=0
+j=0
+k=0
+#while i < len(subintervals):
+while j+k < len(O_z):
+    if j<len(Mmode_indices_PN16_only):
+        if i==Mmode_indices_PN16_only[j]:
+            O_z_PN16_only.append(O_z[j+k])
+            pdf_PN16_only.append(pdf[j+k])
+            j+=1
+    if k<len(Mmode_indices_overlapping):
+        if i==Mmode_indices_overlapping[k]:
+            O_z_overlapping.append(O_z[j+k])
+            pdf_overlapping.append(pdf[j+k])
+            k+=1
+    i+=1
+"""
 for i in range(0,len(Mmode_indices_PN16_only)):
     O_z_PN16_only.append(O_z_wfill[Mmode_indices_PN16_only[i]] )
-for i in range(0,len(Mmode_indices_SLD08_only)):
-    O_z_SLD08_only.append(O_z_wfill[Mmode_indices_SLD08_only[i]] )
+    pdf_PN16_only.append(pdf_wfill[Mmode_indices_PN16_only[i]] )
 for i in range(0,len(Mmode_indices_overlapping)):
     O_z_overlapping.append(O_z_wfill[Mmode_indices_overlapping[i]] )
-for i in range(0,len(Mmode_indices_PN16_only)):
-    pdf_PN16_only.append(pdf_wfill[Mmode_indices_PN16_only[i]] )
-for i in range(0,len(Mmode_indices_SLD08_only)):
-    pdf_SLD08_only.append(pdf_wfill[Mmode_indices_SLD08_only[i]] )
-for i in range(0,len(Mmode_indices_overlapping)):
     pdf_overlapping.append(pdf_wfill[Mmode_indices_overlapping[i]] )
+"""
 
 
+kde_overlapping2= KernelDensity(kernel='gaussian',bandwidth=1.0).fit(np.transpose(np.array([O_z_overlapping])))
+log_pdf_overlapping2 = kde_overlapping2.score_samples(np.transpose(np.array([O_z_overlapping])))
+pdf_overlapping2 = np.exp(log_pdf_overlapping2)
+
+################################################################################
+    
+######################## PRINTING ##############################################
+
+################################################################################
+
+print("O_z PN16:",O_z[np.argmax(pdf)],np.mean(O_z),np.std(O_z))
+print("O_z both:",O_z_overlapping[np.argmax(pdf_overlapping2)],np.mean(O_z_overlapping),np.std(O_z_overlapping))
 
 
 ################################################################################
@@ -625,21 +657,37 @@ if PLOT:
     ax82.plot_date(sitv_midpoints,np.array(lam3_lam2),fmt='-',linewidth=1.0)    
     ax82.plot_date(sitv_midpoints,[C_lam32]*len(lam3_lam2),fmt='-',linewidth=1.0)   
     ax81.set_ylabel(r"$\frac{\lambda_{1}}{\lambda_{2}}$")
-    ax82.set_ylabel(r"$\frac{\lambda_{3}}{\lambda_{2}}$")     
-
-
+    ax82.set_ylabel(r"$\frac{\lambda_{3}}{\lambda_{2}}$")
+    
     f9=plt.figure()
     ax9 = f9.add_subplot(111)    
     #ax9.hist(O_z,bins=25,normed=True)
     ax9.scatter(O_z_PN16_only,pdf_PN16_only,s=1.0,color='orange',label="PN16 only")
-    if len(Mmode_sitv_times_SLD08_only) > 0:
-        ax9.scatter(O_z_SLD08_only,pdf_SLD08_only,s=1.0,color='green',label="SLD08 only")
+    #if len(Mmode_sitv_times_SLD08_only) > 0:
+    #    ax9.scatter(O_z_SLD08_only,pdf_SLD08_only,s=1.0,color='green',label="SLD08 only")
     ax9.scatter(O_z_overlapping,pdf_overlapping,s=1.0,color='blue',label="PN16&SLD08(no[4])")
-    ax9.set_title("Prob. Density from KDE: C3 01/03/2006, %d PN16 intervals, $(t_{si}=%d,t_{sh}=%d)$ %.2fnT artificial offset"%(Mmode_count_PN16,t_int,shift,artificial_Bz_offset))
+    ax9.set_title("PDF from KDE: C3 "+plot_time_text+", %d PN16 intervals, $(t_{si}=%d,t_{sh}=%d)$ %.2fnT AO"%(Mmode_count_PN16,t_int,shift,artificial_Bz_offset))
     ax9.set_ylabel("Prob. Density")
     ax9.set_xlabel(r"$O_{z}$ (nT)")
     ax9.legend()
+
+    f11=plt.figure()
+    ax11 = f11.add_subplot(111)
+    ax11.scatter(O_z,pdf,s=1.0,color='orange',label="PN16")
+    ax11.set_title("PDF from KDE: C3 "+plot_time_text+", %d PN16 intervals, $(t_{si}=%d,t_{sh}=%d)$ %.2fnT AO"%(Mmode_count_PN16,t_int,shift,artificial_Bz_offset))
+    ax11.set_ylabel("Prob. Density")
+    ax11.set_xlabel(r"$O_{z}$ (nT)")
+    ax11.legend()    
     
+    f10=plt.figure()
+    ax10 = f10.add_subplot(111)
+    ax10.scatter(O_z_overlapping,pdf_overlapping2,s=1.0,color='blue',label="PN16&SLD08(no[4])")
+    ax10.set_title("PDF from KDE: C3 "+plot_time_text+", %d PN16&SLD08(no[4]) intervals, $(t_{si}=%d,t_{sh}=%d)$ %.2fnT AO"%(Mmode_count_overlapping,t_int,shift,artificial_Bz_offset))
+    ax10.set_ylabel("Prob. Density")
+    ax10.set_xlabel(r"$O_{z}$ (nT)")
+    ax10.legend()    
+    
+
     plt.show()        
 
 
