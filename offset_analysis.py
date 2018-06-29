@@ -53,13 +53,13 @@ csv_file_name = "DSL_C3_CP_FGM_5VPS__20060302_000000_20060307_000000_V140305"
 
 yyyy_s = '2006'
 mm_s = '03'
-dd_s = '04'
-hh24_s = '10'
+dd_s = '03'
+hh24_s = '14'
 
 yyyy_e = '2006'
 mm_e = '03'
-dd_e = '04'
-hh24_e = '16'
+dd_e = '03'
+hh24_e = '21'
 
 plot_time_text = yyyy_s+'/'+mm_s+'/'+dd_s+' '+hh24_s+'~'+hh24_e
 
@@ -487,7 +487,7 @@ pdf = np.exp(log_pdf)
 O_z_PN16_only = []
 O_z_overlapping = []
 pdf_PN16_only = []
-pdf_overlapping = []
+pdf_overlapping1 = []
 
 i=0
 j=0
@@ -502,7 +502,7 @@ while j+k < len(O_z):
     if k<len(Mmode_indices_overlapping):
         if i==Mmode_indices_overlapping[k]:
             O_z_overlapping.append(O_z[j+k])
-            pdf_overlapping.append(pdf[j+k])
+            pdf_overlapping1.append(pdf[j+k])
             k+=1
     i+=1
 """
@@ -665,7 +665,7 @@ if PLOT:
     ax9.scatter(O_z_PN16_only,pdf_PN16_only,s=1.0,color='orange',label="PN16 only")
     #if len(Mmode_sitv_times_SLD08_only) > 0:
     #    ax9.scatter(O_z_SLD08_only,pdf_SLD08_only,s=1.0,color='green',label="SLD08 only")
-    ax9.scatter(O_z_overlapping,pdf_overlapping,s=1.0,color='blue',label="PN16&SLD08(no[4])")
+    ax9.scatter(O_z_overlapping,pdf_overlapping1,s=1.0,color='blue',label="PN16&SLD08(no[4])")
     ax9.set_title("PDF from KDE: C3 "+plot_time_text+", %d PN16 intervals, $(t_{si}=%d,t_{sh}=%d)$ %.2fnT AO"%(Mmode_count_PN16,t_int,shift,artificial_Bz_offset))
     ax9.set_ylabel("Prob. Density")
     ax9.set_xlabel(r"$O_{z}$ (nT)")
