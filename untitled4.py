@@ -284,7 +284,7 @@ for i in range(0,int((t_secs[-1]-t_secs[0]-t_int+shift)/shift)):
 
 Bx_sitv_mean = np.array(Bx_sitv_mean)
 By_sitv_mean = np.array(By_sitv_mean)
-Bz_sitv_mean = np.array(Bz_sitv_mean)             
+Bz_sitv_mean = np.array(Bz_sitv_mean)
         
 subintervals = np.array(gapadj_subintervals.copy())
 
@@ -390,8 +390,7 @@ for i in range(0,len(subintervals)):
                         O_z.append(+abs(Bz_sitv_mean[i]) - abs(x1[2])/x1_xy*Bxy_sitv_mean[i] )
                      elif Bz_sitv_mean[i] < 0:
                         O_z.append(-abs(Bz_sitv_mean[i]) + abs(x1[2])/x1_xy*Bxy_sitv_mean[i] )
- 
-                    """
+                     """
 error=[]
 for i in range(len(d_b)):
     d_thetaB.append((d_b[i]/(1+(bzmirror[i]/bxymirror[i])**2))*np.sqrt((1/bxymirror[i])**2+(bzmirror[i]/bxymirror[i]**2)**2))   

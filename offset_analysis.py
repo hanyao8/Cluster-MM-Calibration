@@ -17,8 +17,8 @@ import matplotlib.pyplot as plt
 #import time
 from datetime import datetime
 
-import pywt
-from scipy.integrate import quad
+#import pywt
+#from scipy.integrate import quad
 
 from sklearn.neighbors.kde import KernelDensity
 
@@ -42,7 +42,8 @@ if not(ARTIFICIAL_OFFSET):
 
 #csv_file_name = "DSL_C3_CP_FGM_5VPS__20061103_000000_20061104_000000_V140305"
 #csv_file_name = "DSL_C3_CP_FGM_5VPS__20060301_000000_20060302_000000_V140305"
-csv_file_name = "DSL_C3_CP_FGM_5VPS__20060302_000000_20060307_000000_V140305"
+#csv_file_name = "DSL_C3_CP_FGM_5VPS__20060302_000000_20060307_000000_V140305"
+csv_file_name = "DSL_C3_CP_FGM_5VPS__20060307_000000_20060312_000000_V140305"
 
 #data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T00:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 #data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T22:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
@@ -53,13 +54,13 @@ csv_file_name = "DSL_C3_CP_FGM_5VPS__20060302_000000_20060307_000000_V140305"
 
 yyyy_s = '2006'
 mm_s = '03'
-dd_s = '03'
-hh24_s = '14'
+dd_s = '11'
+hh24_s = '13'
 
 yyyy_e = '2006'
 mm_e = '03'
-dd_e = '03'
-hh24_e = '21'
+dd_e = '11'
+hh24_e = '22'
 
 plot_time_text = yyyy_s+'/'+mm_s+'/'+dd_s+' '+hh24_s+'~'+hh24_e
 

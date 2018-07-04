@@ -338,7 +338,7 @@ for i in range(0,len(subintervals)):
                     """
 error=[]
 for i in range(len(d_b)):
-    d_thetaB.append((d_b[i]/(1+(bzmirror[i]/bxymirror[i])**2))*np.sqrt((1/bxymirror[i])**2+(bzmirror[i]/bxymirror[i]**2)**2))   
+    d_thetaB.append((d_b[i]/(1+(bzmirror[i]/bxymirror[i])**2))*np.sqrt((1/bxymirror[i])**2+(bzmirror[i]/bxymirror[i]**2)**2))
     error.append(np.sqrt(((np.tan(theta_mb[i])-np.tan(theta_md[i]))*d_b[i])**2+((bxymirror[i]*d_thetaB[i])/(np.cos(theta_mb[i]))**2)**2+((bxymirror[i]*d_thetaD[i])/(np.cos(theta_md[i]))**2)**2))                 
 test=np.array(test)
 
@@ -355,7 +355,7 @@ ax9.set_ylabel("Prob. Density")
 ax9.set_xlabel(r"$O_{z}$ (nT)")
 ax9.legend()
     
-plt.show()    
+plt.show()
 
 
 #unweighted histogram and kde
