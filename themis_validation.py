@@ -45,24 +45,6 @@ shift = 10
 
 data_start_time = matplotlib.dates.date2num(datetime.strptime('2008-07-02T14:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 data_end_time = matplotlib.dates.date2num(datetime.strptime('2008-07-02T18:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
-"""
-var_arr = ['time_tags__C1_CP_FGM_5VPS',
- 'half_interval__C1_CP_FGM_5VPS',
- 'B_vec_x_gse__C1_CP_FGM_5VPS',
- 'B_vec_y_gse__C1_CP_FGM_5VPS',
- 'B_vec_z_gse__C1_CP_FGM_5VPS',
- 'B_mag__C1_CP_FGM_5VPS',
- 'sc_pos_x_gse__C1_CP_FGM_5VPS',
- 'sc_pos_y_gse__C1_CP_FGM_5VPS',
- 'sc_pos_z_gse__C1_CP_FGM_5VPS', 
- 'range__C1_CP_FGM_5VPS',
- 'tm__C1_CP_FGM_5VPS']
-
-var_names = ['Time','Half Interval','Bx','By','Bz','Bt','x','y','z','range','tm']
-
-csv_file_name = "C1_CP_FGM_5VPS__20060301_103000_20060301_113000_V140304"
-"""
-
 
 
 ####################################################################
