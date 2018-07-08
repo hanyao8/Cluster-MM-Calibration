@@ -12,7 +12,6 @@ import numpy as np
 import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
-import math 
 #import time
 from datetime import datetime
 from scipy import stats
@@ -30,10 +29,8 @@ artificial_Bz_offset = 5.0 #nT (in DSL coordinates)
 #csv_file_name = "C1_CP_FGM_5VPS__20060301_103000_20060301_113000_V140304"
 
 
-#data_start_time = matplotlib.dates.date2num(datetime.strptime('2008-07-01T00:02:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
-#data_end_time = matplotlib.dates.date2num(datetime.strptime('2008-08-01T00:01:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
-data_start_time = matplotlib.dates.date2num(datetime.strptime('2008-07-01T00:00:05.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
-data_end_time = matplotlib.dates.date2num(datetime.strptime('2008-08-01T00:00:01.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T00:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T10:59:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 
 t_int = 180
 shift = 10
@@ -49,7 +46,7 @@ C_MV_B = 30*np.pi/180
 
 var_names = ['Time','Half Interval','Bx','By','Bz','Bt','x','y','z','range','tm']
 
-csv_file_name = "DSL_THEMIS_C_FGM_SPINRES_2008Jul"
+csv_file_name = "2006March3"
 
 csv_df = pd.read_csv(os.getcwd()+"//" +  csv_file_name + ".csv",names=var_names)
 csv_df.head()
@@ -105,7 +102,7 @@ B_x = df_arr[:,2]
 B_y = df_arr[:,3]
 B_z = df_arr[:,4]
 #B_mag = df_arr[:,5]
-B_z = np.array(len(B_z)*[artificial_Bz_offset]) + np.array(B_z)
+
 #!!!!!!!!!!!!! artificial offset set here:
 if ARTIFICIAL_OFFSET:
     B_z = np.array(len(B_z)*[artificial_Bz_offset]) + np.array(B_z)
@@ -157,9 +154,6 @@ self.B_mag=B_mag
 
 t_days = t_days[data_start_index:data_end_index]
 t_secs = t_secs[data_start_index:data_end_index]
-entiredays=[]
-for i in t_days:
-    entiredays.append(math.floor(i))
 """
 self.t_days=t_days
 self.t_secs=t_secs
@@ -231,8 +225,7 @@ for i in range(0,int((t_secs[-1]-t_secs[0]-t_int+shift)/shift)):
         """
         Bxy_sitv_min.append(min(Bxy_sitv[-1]))
         Bxy_sitv_max.append(max(Bxy_sitv[-1]))
-        #Bxy_sitv_mean.append(np.mean(Bxy_sitv[-1]))
-        Bxy_sitv_mean.append(np.sqrt(Bx_sitv_mean[-1]**2+By_sitv_mean[-1]**2))
+        Bxy_sitv_mean.append(np.mean(Bxy_sitv[-1]))
 
 Bx_sitv_mean = np.array(Bx_sitv_mean)
 By_sitv_mean = np.array(By_sitv_mean)
@@ -258,7 +251,7 @@ dO=[]
 
 d_thetaD=[]
 d_g=10**(-4)
-d_bn=10**(-11)
+d_bn=10**(-12)
 d_b=[]
 bxymirror=[]
 bzmirror=[]
@@ -266,9 +259,9 @@ d_thetaB=[]
 theta_mb=[]
 theta_md=[]
 test=[]
-B_magn=[]
+oz1=[]
 #using PN16 criteria 
-starttim=[]
+
 for i in range(0,len(subintervals)):
     data = np.array([Bx_sitv[i],By_sitv[i],Bz_sitv[i]])
     eigen = np.linalg.eig(varlist(data))   
@@ -313,7 +306,7 @@ for i in range(0,len(subintervals)):
     B_dir_xy = np.sqrt(B_dir[0]**2+B_dir[1]**2)
     theta_D.append( (np.arctan2([x1_xy],[x1[2]]))[0])
     phi_D.append( (np.arctan2( [x1[1]],[x1[0] ]) )[0] )
-    B_magn.append(np.sqrt(Bx_sitv_mean[i]**2+By_sitv_mean[i]**2+Bz_sitv_mean[i]**2))
+    B_magn=np.sqrt(Bx_sitv_mean[i]**2+By_sitv_mean[i]**2+Bz_sitv_mean[i]**2)
     
     #if SETTING=='mmode_search':
     B_x1_angle.append( np.arccos(abs(np.dot(x1,B_dir)))  )
@@ -322,26 +315,27 @@ for i in range(0,len(subintervals)):
     
     theta_B_PN16.append( np.arctan2(B_dir[2],B_dir_xy) )
     theta_D_PN16.append( np.arctan2(x1[2],x1_xy) )
-    rules=[Bxy_fluct_PN16[i]>C_xy,abs(phi_PN16[i]) < C_phi,abs(theta_D_PN16[i]) < C_D,abs(theta_B_PN16[i]) < C_B]
-    if all(rules):
-            
+    rules=[Bxy_fluct_PN16[i]>C_xy,abs(phi_PN16[i]) < C_phi,abs(theta_D_PN16[i]) < C_D]
+    if Bxy_fluct_PN16[i]>C_xy:
+        if abs(phi_PN16[i]) < C_phi:
+            if abs(theta_B_PN16[i]) < C_B:
+                if abs(theta_D_PN16[i]) < C_D:
                      d_thetaD.append(np.arctan(lam2_lam1[i]))
-                     d_b.append(abs(B_magn[i])*d_g+d_bn)
-                     #d_b.append(abs(Bz_sitv_mean[i])*d_g+d_bn)
+                     d_b.append(abs(Bz_sitv_mean[i])*d_g+d_bn)
                      bxymirror.append(Bxy_sitv_mean[i])
                      bzmirror.append(Bz_sitv_mean[i])
                      theta_mb.append(theta_B_PN16[i])
                      theta_md.append(theta_D_PN16[i])
                      test.append(Bxy_sitv_mean[i]*(np.tan(theta_B_PN16[i])-np.tan(theta_D_PN16[i])))
-                     starttim.append(math.floor(subintervals[i][0]/(60**2*24)))
-                     #O_z.append(Bz_sitv_mean[i]-x1[2]/x1_xy*Bxy_sitv_mean[i])
+                     O_z.append(Bz_sitv_mean[i]-x1[2]/x1_xy*Bxy_sitv_mean[i])
                      
-                     
+                     """
                      if Bz_sitv_mean[i] > 0:
                         O_z.append(+abs(Bz_sitv_mean[i]) - abs(x1[2])/x1_xy*Bxy_sitv_mean[i] )
                      elif Bz_sitv_mean[i] < 0:
                         O_z.append(-abs(Bz_sitv_mean[i]) + abs(x1[2])/x1_xy*Bxy_sitv_mean[i] )
  
+                    """
 error=[]
 for i in range(len(d_b)):
     d_thetaB.append((d_b[i]/(1+(bzmirror[i]/bxymirror[i])**2))*np.sqrt((1/bxymirror[i])**2+(bzmirror[i]/bxymirror[i]**2)**2))   
@@ -349,58 +343,8 @@ for i in range(len(d_b)):
 test=np.array(test)
 
 O_z = np.array(O_z)
-
 O_z_T = np.transpose(np.array([O_z]))
 
-
-O_zd=[]
-
-errord=[]
-for i in range(len(np.unique(starttim))):
-    O_zd.append([])
-    errord.append([])
-
-count=0
-for i in range(len(O_z)):
-        if i==0 and starttim[0]==starttim[1]:
-            O_zd[count].append(O_z[i])
-            errord[count].append(error[i])
-        elif starttim[i-1]==starttim[i]:
-            O_zd[count].append(O_z[i])
-            errord[count].append(error[i])
-        elif count<len(O_zd)-1:
-            count+=1
-            
-            
-for i in errord:
-    i=np.array(i)  
-for i in O_zd:
-    i=np.array(i)    
-
-O_ztd=[]
-
-for i in range(len(O_zd)):
-    O_ztd.append(np.transpose(np.array(np.array(O_zd[i]))))
-    
- 
-
-"""
-for i in O_ztd:
-    kde= KernelDensity(kernel='gaussian',bandwidth=1.0).fit(i)
-    log_pdf = kde.score_samples(O_z_T)
-    plt.scatter(O_z,np.exp(log_pdf),s=1.0,color='orange',label="0nT artificial offset")
-"""    
-
-
-plt.figure()
-plt.plot(error,O_z,'x')
-x=np.linspace(0,20,1000)
-y=x
-y=-x
-plt.plot(x,y,'r')
-plt.plot(x,-y,'r')
-
-"""
 kde= KernelDensity(kernel='gaussian',bandwidth=1.0).fit(O_z_T)
 log_pdf = kde.score_samples(O_z_T)
 f9=plt.figure()
@@ -413,27 +357,7 @@ ax9.legend()
     
 plt.show()    
 
-"""
 
-def kde(mean,sigma):    
-    x=np.linspace(-15,15,1000)
-    gaussian=[]
-    ker=0
-    for i in range(len(mean)):
-        mu, width=mean, sigma
-        y=1/(width[i] * np.sqrt(2 * np.pi))*np.exp( - (x - mu[i])**2 / (2 * width[i]**2))
-        gaussian.append(y)
-        ker+=y
-    ker=ker/len(mean)
-    return x[np.where(ker==np.max(ker))[0][0]]
-
-dailyO=[]
-sigma=np.array([1.]*len(O_z))
-for i in range(len(O_zd)):
-   dailyO.append( kde(O_zd[i],sigma))
-    
-    
-    
 #unweighted histogram and kde
 
 """
@@ -457,4 +381,44 @@ maximum=x[np.where(y==y.max())[0][0]]
 
 #weigthed histogram and kde
 
+width=plt.hist(error,bins='auto')[1].max()
 
+w=[]
+for i in range(len(error)):
+    w.append(np.exp(-error[i]**2/(2*width**2)))
+    
+num_samples = len(O_z)
+xmin, xmax = -15, 15
+gaussian_weights=np.array(w)
+gaussian_weights /= np.sum(gaussian_weights)
+gaussian_means = O_z
+gaussian_std=np.array([1]*len(w))
+gaussian_observation=np.array([0.1]*(len(w)))
+gaussian_samples = np.random.multinomial(num_samples, gaussian_weights)
+samples = []
+weights = []
+
+for n, m, s, o in zip(gaussian_samples, gaussian_means, gaussian_std, gaussian_observation):
+    _samples = np.random.normal(m, s, n)
+    _samples = _samples[o > np.random.uniform(size=n)]
+    samples.extend(_samples)
+    weights.extend(np.ones_like(_samples) / o)
+weights = np.array(weights, np.float)
+weights /= np.sum(weights)
+samples = np.array(samples)
+
+weights = np.array(weights, np.float)
+weights /= np.sum(weights)
+samples = np.array(samples)
+
+pdf = stats.gaussian_kde(samples)
+y = pdf(x)
+plt.plot(x, y, label='unweighted kde')
+
+plt.hist(samples, bins, (xmin, xmax), histtype='stepfilled', 
+         alpha=.2, density=True, color='k', label='histogram', weights=weights)
+
+pdf = gaussian_kde(samples, weights=weights)
+y = pdf(x)
+plt.plot(x, y, label='weighted kde')
+"""
