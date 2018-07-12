@@ -135,31 +135,9 @@ B_y.astype(float)
 B_z.astype(float)
 B_mag = (B_x**2+B_y**2+B_z**2)**(0.5)
 
-#print(t[0])
-"""
-self.t=t
-
-self.B_x=B_x
-self.B_y=B_y
-self.B_z=B_z
-self.B_mag=B_mag
-"""
-
-#t_datetime = []
-#for i in range(0,len(t)):
-#    strpdtime=datetime.strptime(t[i],'%Y-%m-%dT%H:%M:%S.%fZ')
-#    t_datetime.append(strpdtime)
-#t_days = matplotlib.dates.date2num(t_datetime)
-#t_secs= t_days*24*3600
 
 t_days = t_days[data_start_index:data_end_index]
 t_secs = t_secs[data_start_index:data_end_index]
-"""
-self.t_days=t_days
-self.t_secs=t_secs
-"""
-#print(t_days[0])
-#print(self.t_days[0])
 
 
 B_xy = np.empty(len(t))
@@ -216,13 +194,7 @@ for i in range(0,int((t_secs[-1]-t_secs[0]-t_int+shift)/shift)):
         Bx_sitv_mean.append(np.mean(B_x[si_start:si_end]))
         By_sitv_mean.append(np.mean(B_y[si_start:si_end]))
         Bz_sitv_mean.append(np.mean(B_z[si_start:si_end]))
-        """
-        if i%1000==0:
-            print(si_start)
-            print(si_end)
-            print(np.mean(self.B_x[si_start:si_end]))
-            #print(self.Bx_sitv_mean[i])
-        """
+
         Bxy_sitv_min.append(min(Bxy_sitv[-1]))
         Bxy_sitv_max.append(max(Bxy_sitv[-1]))
         Bxy_sitv_mean.append(np.mean(Bxy_sitv[-1]))
@@ -285,33 +257,21 @@ for i in range(0,len(subintervals)):
     x1 = eigen[1][:,lam1_index]
     x1_xy = np.sqrt(x1[0]**2+x1[1]**2)
 
-    x1_prev = [0.0,0.0,0.0] #just an initialisation to make python happy
-    if i==0:
-        #x1 = +1*np.array([-0.27334004 , 0.89995506 , 0.33965588])
-        x1 = +x1
-        #x1 = -x1
-        #x1_prev = x1.copy()
-        
-    else:
-        if np.dot(x1_prev,x1) < 0:
-            x1 = -x1
-    
-    x1_prev = x1.copy()
-    
-
-
-
     B_dir = np.array([Bx_sitv_mean[i],By_sitv_mean[i],Bz_sitv_mean[i]])
     B_dir /= np.sqrt(Bx_sitv_mean[i]**2+By_sitv_mean[i]**2+Bz_sitv_mean[i]**2)
     B_dir_xy = np.sqrt(B_dir[0]**2+B_dir[1]**2)
+
+    if np.dot(x1,B_dir) < 0:
+        x1=-x1
+            
     theta_D.append( (np.arctan2([x1_xy],[x1[2]]))[0])
     phi_D.append( (np.arctan2( [x1[1]],[x1[0] ]) )[0] )
     B_magn=np.sqrt(Bx_sitv_mean[i]**2+By_sitv_mean[i]**2+Bz_sitv_mean[i]**2)
     
     #if SETTING=='mmode_search':
-    B_x1_angle.append( np.arccos(abs(np.dot(x1,B_dir)))  )
-    phi_PN16.append( np.arccos(abs(np.dot([x1[0],x1[1]],[B_dir[0],B_dir[1]]) \
-                                     /np.sqrt(x1[0]**2+x1[1]**2)/np.sqrt(B_dir[0]**2+B_dir[1]**2) ))) 
+    B_x1_angle.append( np.arccos(np.dot(x1,B_dir)))
+    phi_PN16.append( np.arccos(np.dot([x1[0],x1[1]],[B_dir[0],B_dir[1]]) \
+                                     /np.sqrt(x1[0]**2+x1[1]**2)/np.sqrt(B_dir[0]**2+B_dir[1]**2) ))
     
     theta_B_PN16.append( np.arctan2(B_dir[2],B_dir_xy) )
     theta_D_PN16.append( np.arctan2(x1[2],x1_xy) )
@@ -421,4 +381,9 @@ plt.hist(samples, bins, (xmin, xmax), histtype='stepfilled',
 pdf = gaussian_kde(samples, weights=weights)
 y = pdf(x)
 plt.plot(x, y, label='weighted kde')
-"""
+
+
+
+
+
+

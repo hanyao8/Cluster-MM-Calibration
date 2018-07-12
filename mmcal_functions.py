@@ -154,7 +154,7 @@ def sitvfy(input_data,settings_params):
     return([sitv_midpoints_secs,[Bx_sitv,By_sitv,Bz_sitv],Bmag_sitv_mean,[Bxy_sitv_min,Bxy_sitv_max,Bxy_sitv_mean]])
     
     
-    
+
 def MVA(input_data):
     
     sitv_midpoints_secs = input_data[0]
@@ -234,3 +234,149 @@ def MVA(input_data):
     
     
     
+    
+def MVA_offsetref(input_data):
+    
+    sitv_midpoints_secs = input_data[0]
+    Bx_sitv = input_data[1][0]
+    By_sitv = input_data[1][1]    
+    Bz_sitv = input_data[1][2]
+    Bxy_sitv_min = input_data[2][0]
+    Bxy_sitv_max = input_data[2][1]   
+    Bxy_sitv_mean = input_data[2][2]    
+    Bx_sitv_mean = [np.mean(Bx_sitv[i]) for i in range(0,len(sitv_midpoints_secs))]
+    By_sitv_mean = [np.mean(By_sitv[i]) for i in range(0,len(sitv_midpoints_secs))]
+    Bz_sitv_mean = [np.mean(Bz_sitv[i]) for i in range(0,len(sitv_midpoints_secs))]
+
+    Bxy_fluct_PN16 = (np.array(Bxy_sitv_max)-np.array(Bxy_sitv_min))/np.array(Bxy_sitv_mean)
+    phi_PN16 = []
+    theta_B_PN16 = []
+    theta_D_PN16 = []
+    
+    B_x1_angle = []
+    theta_D = []
+    phi_D = []
+    lam1_lam2 = []
+    lam3_lam2 = []
+
+    
+    O_z_unfiltered = []
+    dO=[]
+    
+    d_g=10**(-4)
+    d_bn=10**(-12)
+    d_thetaD=[]    
+    d_b=[]
+    bxymirror=[]
+    bzmirror=[]
+    d_thetaB=[]
+    theta_mb=[]
+    theta_md=[]
+    test=[]
+    oz1=[]    
+    
+    for i in range(0,len(sitv_midpoints_secs)):
+        data = np.array([Bx_sitv[i],By_sitv[i],Bz_sitv[i]])
+        eigen = np.linalg.eig(varlist(data))   
+    
+        lam1_index = np.argmax(eigen[0])
+        lam3_index = np.argmin(eigen[0])
+        for eigenindex in [0,1,2]:
+            if eigenindex!=lam1_index and eigenindex!=lam3_index:
+                lam2_index=eigenindex
+                break
+            
+        lam1 = eigen[0][lam1_index]
+        lam2 = eigen[0][lam2_index]
+        lam3 = eigen[0][lam3_index]
+        
+        lam1_lam2.append(lam1/lam2)
+        lam3_lam2.append(lam3/lam2)
+    
+        x1 = eigen[1][:,lam1_index]
+        x1_xy = np.sqrt(x1[0]**2+x1[1]**2)
+    
+        B_dir = np.array([Bx_sitv_mean[i],By_sitv_mean[i],Bz_sitv_mean[i]])
+        B_dir /= np.sqrt(Bx_sitv_mean[i]**2+By_sitv_mean[i]**2+Bz_sitv_mean[i]**2)
+        B_dir_xy = np.sqrt(B_dir[0]**2+B_dir[1]**2)
+    
+        if np.dot(x1,B_dir) < 0:
+            x1=-x1
+    
+        theta_D.append( (np.arctan2( [x1_xy],[x1[2]] ))[0])
+        phi_D.append( (np.arctan2( [x1[1]],[x1[0] ]) )[0] )
+        B_magn=np.sqrt(Bx_sitv_mean[i]**2+By_sitv_mean[i]**2+Bz_sitv_mean[i]**2)        
+    
+        B_x1_angle.append( np.arccos(np.dot(x1,B_dir)))
+        phi_PN16.append( np.arccos(np.dot([x1[0],x1[1]],[B_dir[0],B_dir[1]]) \
+                                         /np.sqrt(x1[0]**2+x1[1]**2)/np.sqrt(B_dir[0]**2+B_dir[1]**2) ))
+        """           
+        else:
+            B_x1_angle.append( np.arccos(np.dot(x1,B_dir))  )
+            phi_PN16.append( np.arccos(np.dot([x1[0],x1[1]],[B_dir[0],B_dir[1]]) \
+                                             /np.sqrt(x1[0]**2+x1[1]**2)/np.sqrt(B_dir[0]**2+B_dir[1]**2) ) )
+        """
+    
+        theta_B_PN16.append( np.arctan2(B_dir[2],B_dir_xy) )
+        theta_D_PN16.append( np.arctan2(x1[2],x1_xy) )
+        
+        O_z_unfiltered.append( Bz_sitv_mean[i] - x1[2]/x1_xy*Bxy_sitv_mean[i] )
+                        
+    return([[phi_PN16,theta_D_PN16,theta_B_PN16,Bxy_fluct_PN16]\
+                ,[B_x1_angle,theta_D,phi_D,lam1_lam2,lam3_lam2]\
+                ,O_z_unfiltered] )
+    
+
+def get_Mmode_times(sitv_midpoints_days,Mmode_indices_PN16_only\
+                                     ,Mmode_indices_SLD08_only\
+                                     ,Mmode_indices_overlapping):
+    
+    #Mmode_sitv_times_PN16 = []
+    #Mmode_sitv_times_SLD08 = []
+    Mmode_sitv_times_PN16_only = []
+    #Mmode_sitv_times_PN16_days = []
+    Mmode_sitv_times_SLD08_only = []
+    #Mmode_sitv_times_SLD08_days = []    
+    Mmode_sitv_times_overlapping = [] 
+    #Mmode_sitv_times_overlapping_days = [] 
+    
+    #for i in range(0,len(Mmode_indices_PN16)):
+        #Mmode_sitv_times_PN16.append(matplotlib.dates.num2date(sitv_midpoints_days[Mmode_indices_PN16[i]]))
+        #Mmode_sitv_times_PN16_days.append(sitv_midpoints_days[Mmode_indices_PN16[i]])
+    #for i in range(0,len(Mmode_indices_SLD08)):
+        #Mmode_sitv_times_SLD08.append(matplotlib.dates.num2date(sitv_midpoints_days[Mmode_indices_SLD08[i]]))   
+        #Mmode_sitv_times_SLD08_days.append(sitv_midpoints_days[Mmode_indices_SLD08[i]])
+    for i in range(0,len(Mmode_indices_PN16_only)):
+        Mmode_sitv_times_PN16_only.append(matplotlib.dates.num2date(sitv_midpoints_days[Mmode_indices_PN16_only[i]]))
+    for i in range(0,len(Mmode_indices_SLD08_only)):
+        Mmode_sitv_times_SLD08_only.append(matplotlib.dates.num2date(sitv_midpoints_days[Mmode_indices_SLD08_only[i]]))   
+    for i in range(0,len(Mmode_indices_overlapping)):        
+        Mmode_sitv_times_overlapping.append(matplotlib.dates.num2date(sitv_midpoints_days[Mmode_indices_overlapping[i]]))
+        #Mmode_sitv_times_overlapping_days.append(sitv_midpoints_days[Mmode_indices_overlapping[i]])
+    
+    return([Mmode_sitv_times_PN16_only,Mmode_sitv_times_SLD08_only,Mmode_sitv_times_overlapping])
+    
+
+
+def sitv_in_sheath_frac(sitv_midpoints_days,indices_arrs,sheath_times):
+
+    Mmode_indices_PN16 = indices_arrs[0]
+    Mmode_indices_SLD08 = indices_arrs[1]
+    Mmode_indices_overlapping = indices_arrs[2]
+    
+    sheath_start_time = sheath_times[0]
+    sheath_end_time = sheath_times[1]
+    
+    Mmode_sitv_times_PN16_days = [(sitv_midpoints_days[Mmode_indices_PN16[i]]) for i in range(0,len(Mmode_indices_PN16))]
+    Mmode_sitv_times_SLD08_days = [(sitv_midpoints_days[Mmode_indices_SLD08[i]]) for i in range(0,len(Mmode_indices_SLD08))]  
+    Mmode_sitv_times_overlapping_days =[(sitv_midpoints_days[Mmode_indices_overlapping[i]]) for i in range(0,len(Mmode_indices_overlapping))]
+    
+    PN16_frac_in_sheath = (np.argmax(np.array(Mmode_sitv_times_PN16_days)>sheath_end_time) - np.argmax(np.array(Mmode_sitv_times_PN16_days)>sheath_start_time) )/len(Mmode_indices_PN16)
+    SLD08_frac_in_sheath = (np.argmax(np.array(Mmode_sitv_times_SLD08_days)>sheath_end_time) - np.argmax(np.array(Mmode_sitv_times_SLD08_days)>sheath_start_time) )/len(Mmode_indices_SLD08)
+    overlapping_frac_in_sheath = (np.argmax(np.array(Mmode_sitv_times_overlapping_days)>sheath_end_time) - np.argmax(np.array(Mmode_sitv_times_overlapping_days)>sheath_start_time) )/len(Mmode_indices_overlapping)
+    
+    print(PN16_frac_in_sheath)
+    print(SLD08_frac_in_sheath)
+    print(overlapping_frac_in_sheath)
+    
+    return()
