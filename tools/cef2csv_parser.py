@@ -62,6 +62,11 @@ while ((text[i]).split())[0] != '!RECORDS=':
         data_row_str.replace(" ","")
         #print(data_row_str)
         csv_file.write(data_row_str) 
+	elif SETTING=='ion':
+		data_row_str = (text[i][:-1]+text[i+1][:-1]+text[i+2][:-2])
+		data_row_str.replace(" ","") 
+		csv_file.write(data_row_str+"\n")
+		#Frank Qu et al 2018
         
 
     #print(text[i])
