@@ -22,10 +22,10 @@ from scipy.integrate import quad
 
 
 t_int = 300
-shift = 10
+shift = 300
 
-data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-04-01T00:00:03.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
-data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-04-30T08:01:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-02-01T00:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-02-28T23:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 
 
 var_names=['time_tags__C3_CP_CIS-HIA_ONBOARD_MOMENTS',
@@ -45,8 +45,8 @@ var_names=['time_tags__C3_CP_CIS-HIA_ONBOARD_MOMENTS',
  'pressure__C3_CP_CIS-HIA_ONBOARD_MOMENTS',
  'pressure_tensor__C3_CP_CIS-HIA_ONBOARD_MOMENTS']
 
-csv_file_name = "C3_CP_CIS-HIA_ONBOARD_MOMENTS__20060401_000000_20060501_000000_V161018"
-fgm_file="C3_CP_FGM_SPIN__20060401_000000_20060501_000000_V140305"
+csv_file_name = "C3_CP_CIS-HIA_ONBOARD_MOMENTS__20060201_000000_20060301_000000_V161018"
+fgm_file="C3_CP_FGM_SPIN__20060201_000000_20060301_000000_V140305"
 csv_df = pd.read_csv(os.getcwd()+"//" +  csv_file_name + ".csv")
 fgm_df=pd.read_csv(os.getcwd()+"//" +  fgm_file+ ".csv")
 
@@ -121,17 +121,28 @@ for i in ionindex:
     
     subtime.append([subintervals[i][0]/(24*60*60),subintervals[i][1]/(24*60*60)])
     
+i=0
 j=0 
 newgfmfile=io.open(os.getcwd()+"//"+"newfgmfile"+".csv","a")
 
-for i in range(len(fgm_arr[:,0])):
+print(len(fgm_arr[:,0]))
+while i <len(fgm_arr[:,0]):
+    
+    if i%10000==0:
+        print(i)
+        
     anything=matplotlib.dates.date2num(datetime.strptime(fgm_arr[:,0][i],'%Y-%m-%dT%H:%M:%S.%fZ'))
     if anything>subtime[j][0] and anything<subtime[j][1]:
         data_row_str=fgm_arr[i][0]+","+str(fgm_arr[i][1])+str(fgm_arr[i][2])+","+str(fgm_arr[i][3])+","+str(fgm_arr[i][4])
         newgfmfile.write(data_row_str+'\n')
-    if anything>subtime[j][1]:
-        j+=1
-        
-        
+        i+=1
+    elif anything < subtime[j][0]:
+        i+=1
+    elif anything > subtime[j][1]:
+        if j<len(ionindex)-1:
+            j+=1
+        elif j==len(ionindex)-1:
+            break
+
  
 
