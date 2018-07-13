@@ -16,16 +16,16 @@ import matplotlib
 import matplotlib.pyplot as plt
 #import time
 from datetime import datetime
-
+import io
 import pywt
 from scipy.integrate import quad
 
 
 t_int = 300
-shift = 300
+shift = 10
 
-data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T00:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
-data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T14:10:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-04-01T00:00:03.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-04-30T08:01:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 
 
 var_names=['time_tags__C3_CP_CIS-HIA_ONBOARD_MOMENTS',
@@ -45,13 +45,13 @@ var_names=['time_tags__C3_CP_CIS-HIA_ONBOARD_MOMENTS',
  'pressure__C3_CP_CIS-HIA_ONBOARD_MOMENTS',
  'pressure_tensor__C3_CP_CIS-HIA_ONBOARD_MOMENTS']
 
-csv_file_name = "C3_CP_CIS-HIA_ONBOARD_MOMENTS__20060301_000000_20060302_000000_V161018"
-
+csv_file_name = "C3_CP_CIS-HIA_ONBOARD_MOMENTS__20060401_000000_20060501_000000_V161018"
+fgm_file="C3_CP_FGM_SPIN__20060401_000000_20060501_000000_V140305"
 csv_df = pd.read_csv(os.getcwd()+"//" +  csv_file_name + ".csv")
-csv_df.head()
+fgm_df=pd.read_csv(os.getcwd()+"//" +  fgm_file+ ".csv")
 
 df_arr = csv_df.values    
-
+fgm_arr=fgm_df.values
 iond=df_arr[:,4]
 t = df_arr[:,0]
 t_datetime = []
@@ -114,4 +114,24 @@ ax1.set_ylabel("Ion density/$cm^{-3}$")
 
 
 for i in range(0,len(ionindex)):          
-    ax1.axvline(sheathtime[i],alpha=0.4,color='orange',linewidth=1.0)
+    ax1.axvline(sheathtime[i],alpha=0.2,color='orange',linewidth=1.0)
+    
+subtime=[]
+for i in ionindex:
+    
+    subtime.append([subintervals[i][0]/(24*60*60),subintervals[i][1]/(24*60*60)])
+    
+j=0 
+newgfmfile=io.open(os.getcwd()+"//"+"newfgmfile"+".csv","a")
+
+for i in range(len(fgm_arr[:,0])):
+    anything=matplotlib.dates.date2num(datetime.strptime(fgm_arr[:,0][i],'%Y-%m-%dT%H:%M:%S.%fZ'))
+    if anything>subtime[j][0] and anything<subtime[j][1]:
+        data_row_str=fgm_arr[i][0]+","+str(fgm_arr[i][1])+str(fgm_arr[i][2])+","+str(fgm_arr[i][3])+","+str(fgm_arr[i][4])
+        newgfmfile.write(data_row_str+'\n')
+    if anything>subtime[j][1]:
+        j+=1
+        
+        
+ 
+
