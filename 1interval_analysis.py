@@ -10,6 +10,7 @@ Created on Thu Jun 21 16:30:14 2018
 #import io
 import os
 import numpy as np
+import math
 #import csv
 import pandas as pd
 import matplotlib
@@ -142,6 +143,12 @@ theta_B = B_polar[1]
 phi_B = B_polar[2]
 
 
+subintervals = np.empty(( int((t_secs[-1]-t_secs[0]-t_int+shift)/shift) ,2))
+for i in range(0,int((t_secs[-1]-t_secs[0]-t_int+shift)/shift)):
+    subintervals[i][0] = t_secs[0] + i*shift
+    subintervals[i][1] = t_secs[0] + i*shift + t_int
+
+
 sitvfied = mmcal_functions.sitvfy([t_secs,[B_x,B_y,B_z],B_mag],[t_int,shift])
 sitv_midpoints_secs = sitvfied[0]
 Bx_sitv = sitvfied[1][0]
@@ -161,11 +168,13 @@ phi_PN16 = MVAed[0][0]
 theta_D_PN16 = MVAed[0][1]
 theta_B_PN16 = MVAed[0][2]
 Bxy_fluct_PN16 = MVAed[0][3]
+
 B_x1_angle = MVAed[1][0]
 theta_D = MVAed[1][1]
 phi_D = MVAed[1][2]
 lam1_lam2 = MVAed[1][3]
 lam3_lam2 = MVAed[1][4]
+
 O_z_unfiltered = MVAed[2]
     
 
@@ -184,6 +193,21 @@ Mmode_indices_PN16_only = []
 Mmode_indices_SLD08_only = []
 
 O_z_PN16 = []
+
+
+dO=[]
+d_thetaD=[]
+d_g=10**(-4)
+d_bn=10**(-11)
+d_b=[]
+bxymirror=[]
+bzmirror=[]
+d_thetaB=[]
+theta_mb=[]
+theta_md=[]
+test=[]
+B_magn=[]
+starttim=[]
 
 for i in range(0,len(sitv_midpoints_secs)):
     PN16_satisfy=False
@@ -206,6 +230,19 @@ for i in range(0,len(sitv_midpoints_secs)):
             
     if PN16_satisfy:
         O_z_PN16.append(O_z_unfiltered[i])
+        
+        d_thetaD.append(np.arctan( (1/lam1_lam2[i]) ))
+        d_b.append(abs(B_magn[i])*d_g+d_bn)
+        #d_b.append(abs(Bz_sitv_mean[i])*d_g+d_bn)
+        bxymirror.append(Bxy_sitv_mean[i])
+        bzmirror.append(Bz_sitv_mean[i])
+        theta_mb.append(theta_B_PN16[i])
+        theta_md.append(theta_D_PN16[i])
+        test.append(Bxy_sitv_mean[i]*(np.tan(theta_B_PN16[i])-np.tan(theta_D_PN16[i])))
+        starttim.append(math.floor(subintervals[i][0]/(3600*24)))
+         #O_z.append(Bz_sitv_mean[i]-x1[2]/x1_xy*Bxy_sitv_mean[i])
+         
+         
         if SLD08_satisfy:
             if len(Mmode_indices_PN16)>0 and len(Mmode_indices_SLD08)>0:
                 if Mmode_indices_PN16[-1]==Mmode_indices_SLD08[-1]:
@@ -218,7 +255,45 @@ for i in range(0,len(sitv_midpoints_secs)):
         #else: nothing is satisfied
             
         
+error=[]
+for i in range(len(d_b)):
+    d_thetaB.append((d_b[i]/(1+(bzmirror[i]/bxymirror[i])**2))*np.sqrt((1/bxymirror[i])**2+(bzmirror[i]/bxymirror[i]**2)**2))   
+    error.append(np.sqrt(((np.tan(theta_mb[i])-np.tan(theta_md[i]))*d_b[i])**2+((bxymirror[i]*d_thetaB[i])/(np.cos(theta_mb[i]))**2)**2+((bxymirror[i]*d_thetaD[i])/(np.cos(theta_md[i]))**2)**2))                 
+test=np.array(test)
+
             
+error=np.array(error)
+plt.figure()
+plt.plot(error,O_z_PN16,'x')
+x=np.linspace(0,20,1000)
+y=error+5
+y1=-error+5
+#y=error
+#y1=-error
+plt.plot(error,y,'r')
+plt.ylim(-30,30)
+plt.plot(error,y1,'r')
+
+width=plt.hist(error,bins='auto')[1].max()
+w=[]
+for i in range(len(error)):
+    w.append(np.exp(-error[i]**2/(2*width**2)))
+
+
+
+dailyO=[]
+dailystd=[]
+N=[]
+sigma=np.array([1.]*len(O_z_PN16))
+for i in range(len(mmcal_functions.dailyOff(O_z_PN16,starttim)[0])):
+   dailyO.append( mmcal_functions.wadapkde(mmcal_functions.dailyOff(O_z_PN16,starttim)[0][i],w))
+   dailystd.append(np.std(mmcal_functions.dailyOff(O_z_PN16,starttim)[0][i]))
+   N.append(len(mmcal_functions.dailyOff(O_z_PN16,starttim)[0][i]))
+   
+dailystd=np.array(dailystd)   
+N=np.array(N)
+
+
 
 
 
@@ -329,6 +404,7 @@ if PLOT:
     ax1.axvline(Mmode_sitv_times_overlapping[0],alpha=0.4,color='blue',linewidth=1.0,label='PN16&SLD08(no[4])')    
     ax1.legend()
 
+    """
     f2=plt.figure()
     ax21 = f2.add_subplot(311)
     ax22 = f2.add_subplot(312)
@@ -345,7 +421,7 @@ if PLOT:
     ax23.plot_date(sitv_midpoints_days,Bz_sitv_mean,fmt='-',linewidth=1.0)
     ax23.set_ylabel(r"$B_{z}$ (nT)")
     ax23.set_xlabel("Time")
-    
+    """
 
     
     f3=plt.figure()
@@ -362,11 +438,12 @@ if PLOT:
     ax33.set_ylabel(r"$B_{z}$ (nT)")
     ax33.set_xlabel("Time")
 
-    #f4=plt.figure()
-    #ax40 = f4.add_subplot(311)
-    #ax41 = f4.add_subplot(312)
-    #ax42 = f4.add_subplot(313)    
     """
+    f4=plt.figure()
+    ax40 = f4.add_subplot(311)
+    ax41 = f4.add_subplot(312)
+    ax42 = f4.add_subplot(313)    
+    
     ax40.plot_date(t_days,B_mag,fmt='-',linewidth=1.0)
     ax41.plot_date(t_days,np.array(theta)*180/np.pi,fmt='-',linewidth=1.0)
     ax42.plot_date(t_days,np.array(phi)*180/np.pi,fmt='-',linewidth=1.0)
@@ -377,6 +454,7 @@ if PLOT:
     ax42.set_xlabel("Time")
     """
 
+    """
     f5=plt.figure()
     ax5 = f5.add_subplot(111)
     
@@ -385,6 +463,7 @@ if PLOT:
     ax5.set_ylabel("B_D_angle (degs)")
     ax5.set_title("Time Series of Angle between MV dir. and B-field dir.")
     ax5.set_xlabel("Time")
+    """
     
     f6=plt.figure()
     ax61 = f6.add_subplot(211)
@@ -410,7 +489,7 @@ if PLOT:
     ax71.set_ylabel(r"$\theta_{B}$")
     ax72.set_ylabel(r"$\frac{\delta B_{xy}}{B_{xy}}$")
     
-    
+    """
     f8=plt.figure()
     ax81 = f8.add_subplot(211)
     ax82 = f8.add_subplot(212)          
@@ -420,6 +499,7 @@ if PLOT:
     ax82.plot_date(sitv_midpoints_days,[C_lam32]*len(lam3_lam2),fmt='-',linewidth=1.0)   
     ax81.set_ylabel(r"$\frac{\lambda_{1}}{\lambda_{2}}$")
     ax82.set_ylabel(r"$\frac{\lambda_{3}}{\lambda_{2}}$")
+    """
     
     f9=plt.figure()
     ax9 = f9.add_subplot(111)    
@@ -432,14 +512,6 @@ if PLOT:
     ax9.set_ylabel("Prob. Density")
     ax9.set_xlabel(r"$O_{z}$ (nT)")
     ax9.legend()
-
-    f11=plt.figure()
-    ax11 = f11.add_subplot(111)
-    ax11.scatter(O_z_PN16,pdf,s=1.0,color='orange',label="PN16")
-    ax11.set_title("PDF from KDE: C3 "+plot_time_text+", %d PN16 intervals, $(t_{si}=%d,t_{sh}=%d)$ %.2fnT AO"%(Mmode_count_PN16,t_int,shift,artificial_Bz_offset))
-    ax11.set_ylabel("Prob. Density")
-    ax11.set_xlabel(r"$O_{z}$ (nT)")
-    ax11.legend()    
     
     f10=plt.figure()
     ax10 = f10.add_subplot(111)
@@ -448,7 +520,14 @@ if PLOT:
     ax10.set_ylabel("Prob. Density")
     ax10.set_xlabel(r"$O_{z}$ (nT)")
     ax10.legend()    
-    
+
+    f11=plt.figure()
+    ax11 = f11.add_subplot(111)
+    ax11.scatter(O_z_PN16,pdf,s=1.0,color='orange',label="PN16")
+    ax11.set_title("PDF from KDE: C3 "+plot_time_text+", %d PN16 intervals, $(t_{si}=%d,t_{sh}=%d)$ %.2fnT AO"%(Mmode_count_PN16,t_int,shift,artificial_Bz_offset))
+    ax11.set_ylabel("Prob. Density")
+    ax11.set_xlabel(r"$O_{z}$ (nT)")
+    ax11.legend()        
 
     plt.show()        
 

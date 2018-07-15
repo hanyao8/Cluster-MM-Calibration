@@ -145,6 +145,7 @@ kde_stats = [[[],[],[]],[[],[],[]]]
 sheath_itv_midpoints = []
 sheath_itv_midpoints_plot1 = []
 O_z_overall = []
+O_z_overall_overlapping = []
 
 for sheathpass_num in range(0,len(sheath_df_arr)):
     print("Progress:",sheathpass_num)

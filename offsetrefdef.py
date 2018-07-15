@@ -16,7 +16,7 @@ import math
 #import time
 from datetime import datetime
 from scipy import stats
-import gaussian
+#import gaussian
 from scipy.integrate import quad
 import bandwidth
 from sklearn.neighbors.kde import KernelDensity
@@ -124,8 +124,14 @@ for i in range(0,len(t)):
 t_days = matplotlib.dates.date2num(t_datetime)
 t_secs= t_days*24*3600
 
-data_start_index = np.argmax(t_days>data_start_time)
-data_end_index = np.argmax(t_days>data_end_time)
+if data_start_time > t_days[0]:
+    data_start_index = np.argmax(t_days>data_start_time)
+else:
+    data_start_index = 0
+if data_end_time < t_days[-1]:
+    data_end_index = np.argmax(t_days>data_end_time)
+else:
+    data_end_index = len(t_days)
      
 
 t = t[data_start_index:data_end_index]

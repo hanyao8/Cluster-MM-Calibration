@@ -380,3 +380,89 @@ def sitv_in_sheath_frac(sitv_midpoints_days,indices_arrs,sheath_times):
     print(overlapping_frac_in_sheath)
     
     return()
+	
+	
+def dailyOff(O_z,starttim):
+    
+    #takes in a list of O_z and separate them into days, returns in list form. Together
+    #with the associated error
+    O_z = np.array(O_z)
+    O_zd=[]
+    errord=[]
+    for i in range(len(np.unique(starttim))):
+        O_zd.append([])
+        errord.append([])
+    
+    count=0
+    for i in range(len(O_z)):
+            if i==0 and starttim[0]==starttim[1]:
+                O_zd[count].append(O_z[i])
+                errord[count].append(error[i])
+            elif starttim[i-1]==starttim[i]:
+                O_zd[count].append(O_z[i])
+                errord[count].append(error[i])
+            elif count<len(O_zd)-1:
+                count+=1
+                
+                
+    for i in errord:
+        i=np.array(i)  
+    for i in O_zd:
+        i=np.array(i)    
+    
+    O_ztd=[]
+    
+    for i in range(len(O_zd)):
+        O_ztd.append(np.transpose(np.array(np.array(O_zd[i]))))
+    
+    return O_ztd,errord
+	
+def kde(mean,sigma,weight):    
+    x=np.linspace(-15,15,1000)
+    gaussian=[]
+    ker=0
+    for i in range(len(mean)):
+        mu, width=mean, sigma
+        y=1/(width[i] * np.sqrt(2 * np.pi)*weight[i])*np.exp( - (x - mu[i])**2 / (2 * width[i]**2))
+        gaussian.append(y)
+        ker+=y
+    ker=ker/len(mean)
+    plt.plot(x,ker,color='blue',label='weighted kde h=1')
+    plt.legend()
+    return x[np.where(ker==np.max(ker))[0][0]]
+	
+def adapkde(mean):
+    h=bandwidth.sskernel(mean)[2]
+    x=np.linspace(-20,20,100000)
+    ker=0
+    for i in range(len(mean)):
+        mu, width=mean, sigma
+        y=1/(h * np.sqrt(2 * np.pi))*np.exp( - (x - mu[i])**2 / (2 * h**2))
+        ker+=y
+    ker=ker/len(mean)
+    plt.plot(x,ker,color='green',label='adaptive kde no weighting')
+    plt.legend()
+    plt.title("Types of KDE")
+    plt.xlabel("$O_z/nT$")
+    plt.ylabel("P/$nT^{-1}$")
+    plt.show()    
+    return x[np.where(ker==np.max(ker))[0][0]]
+    
+def wadapkde(mean,weight):
+    h=bandwidth.sskernel(mean)[2]
+    x=np.linspace(-20,20,100000)
+    ker=0
+    for i in range(len(mean)):
+        mu, width=mean, sigma
+        y=1/(h * np.sqrt(2 * np.pi)*weight[i])*np.exp( - (x - mu[i])**2 / (2 * h**2))
+        ker+=y
+    ker=ker/len(mean)
+    """
+    plt.plot(x,ker,color='red',label='adaptive kde with weighting')
+    plt.legend()
+    plt.show()  
+    """
+    return x[np.where(ker==np.max(ker))[0][0]]
+
+
+	
