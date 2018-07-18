@@ -16,7 +16,7 @@ import math
 #import time
 from datetime import datetime
 from scipy import stats
-#import gaussian
+import gaussian
 from scipy.integrate import quad
 import bandwidth
 from sklearn.neighbors.kde import KernelDensity
@@ -25,13 +25,13 @@ ARTIFICIAL_OFFSET = False
 PLOT= True
 sitv_in_sheath_frac_analysis = True
 
-artificial_Bz_offset = 5.0 #nT (in DSL coordinates)
+artificial_Bz_offset = -0.95-0.0438 #nT (in DSL coordinates)
 
 #csv_file_name = "C1_CP_FGM_5VPS__20060301_103000_20060301_113000_V140304"
 
 
-data_start_time = matplotlib.dates.date2num(datetime.strptime('2008-07-01T00:02:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
-data_end_time = matplotlib.dates.date2num(datetime.strptime('2008-08-01T00:01:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-02-01T13:00:00.300Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-02-27T19:59:40.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 #data_start_time = matplotlib.dates.date2num(datetime.strptime('2008-07-01T00:00:05.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 #data_end_time = matplotlib.dates.date2num(datetime.strptime('2008-07-02T00:00:01.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 
@@ -49,9 +49,10 @@ C_MV_B = 30*np.pi/180
 
 var_names = ['Time','Half Interval','Bx','By','Bz','Bt','x','y','z','range','tm']
 
-csv_file_name = "DSL_THEMIS_C_FGM_SPINRES_2008Jul"
-
+csv_file_name = "DSL_C3_CP_FGM_5VPS__200602_sheathselected"
+#csv_file_name ="DSL_THEMIS_C_FGM_SPINRES_2008Jul"
 csv_df = pd.read_csv(os.getcwd()+"//" +  csv_file_name + ".csv",names=var_names)
+
 csv_df.head()
 df_arr = csv_df.values
 
@@ -99,7 +100,6 @@ def xyz2polar(B_x,B_y,B_z):
 
 ################################################################################
 
-
 t = df_arr[:,0]
 B_x = df_arr[:,2]
 B_y = df_arr[:,3]
@@ -124,6 +124,8 @@ for i in range(0,len(t)):
 t_days = matplotlib.dates.date2num(t_datetime)
 t_secs= t_days*24*3600
 
+#data_start_index = np.argmax(t_days>data_start_time)
+#data_end_index = np.argmax(t_days>data_end_time)
 if data_start_time > t_days[0]:
     data_start_index = np.argmax(t_days>data_start_time)
 else:
@@ -131,8 +133,7 @@ else:
 if data_end_time < t_days[-1]:
     data_end_index = np.argmax(t_days>data_end_time)
 else:
-    data_end_index = len(t_days)
-     
+    data_end_index = len(t_days)              
 
 t = t[data_start_index:data_end_index]
 B_x = B_x[data_start_index:data_end_index]
@@ -398,6 +399,7 @@ w=[]
 for i in range(len(error)):
     w.append(np.exp(-error[i]**2/(2*width**2)))
 
+O_z=np.array(O_z)
 """
 kde= KernelDensity(kernel='gaussian',bandwidth=1.0).fit(O_z_T)
 log_pdf = kde.score_samples(O_z_T)
@@ -414,7 +416,7 @@ plt.show()
 """
 
 def kde(mean,sigma,weight):    
-    x=np.linspace(-15,15,1000)
+    x=np.linspace(-20,20,100000)
     gaussian=[]
     ker=0
     for i in range(len(mean)):
@@ -425,7 +427,7 @@ def kde(mean,sigma,weight):
     ker=ker/len(mean)
     plt.plot(x,ker,color='blue',label='weighted kde h=1')
     plt.legend()
-    return x[np.where(ker==np.max(ker))[0][0]]
+    return ker,x[np.where(ker==np.max(ker))[0][0]]
 
 
 def adapkde(mean):
@@ -454,12 +456,12 @@ def wadapkde(mean,weight):
         y=1/(h * np.sqrt(2 * np.pi)*weight[i])*np.exp( - (x - mu[i])**2 / (2 * h**2))
         ker+=y
     ker=ker/len(mean)
-    """
+    
     plt.plot(x,ker,color='red',label='adaptive kde with weighting')
     plt.legend()
     plt.show()  
-    """
-    return x[np.where(ker==np.max(ker))[0][0]]
+  
+    return ker,x[np.where(ker==np.max(ker))[0][0]]
 
 dailyO=[]
 dailystd=[]
@@ -473,8 +475,22 @@ for i in range(len(dailyOff(O_z,starttim)[0])):
 dailystd=np.array(dailystd)   
 N=np.array(N)
 
+def fwhm(arr):
+    x=np.linspace(-20,20,100000)
+    half_max = max(arr) / 2.
+    d =np.sign(half_max - arr[0:-1]) - np.sign(half_max -(arr[1:]))
+    for i in range(len(d)):
+        if d[i]>0:
+            leftid= i
+            print(leftid)
+            print(x[leftid])
+        elif d[i]<0:
+            rightid=i
+    rightu= x[rightid]-x[np.where(arr==np.max(arr))[0][0]]
+    leftu= x[np.where(arr==np.max(arr))[0][0]]-x[leftid]
+    return [leftu,rightu, x[rightid]-x[leftid]]
 
-
+"""
 
 plt.plot(dailyO,'x',color='red')
 plt.title("Thermis July daily O_z data 5nT offset")
@@ -502,4 +518,4 @@ plt.xlim(0,1.2)
 plt.ylim(-5,15)
 plt.xlabel("$\sigma/\sqrt{N}/nT$")
 plt.ylabel("$O_zF/nT$")
-
+"""
