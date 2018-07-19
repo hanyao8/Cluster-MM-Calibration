@@ -91,7 +91,8 @@ def sitvfy(input_data,settings_params):
     B_x = input_data[1][0]
     B_y = input_data[1][1]
     B_z = input_data[1][2]
-    B_mag = input_data[2]    
+    B_mag = input_data[2]
+    rangelist = input_data[3]
     
     t_int = settings_params[0]
     shift = settings_params[1]
@@ -111,6 +112,7 @@ def sitvfy(input_data,settings_params):
     Bz_sitv = []
     Bmag_sitv=[]
     Bxy_sitv = []
+    range_sitv = []
     
     Bx_sitv_mean = []
     By_sitv_mean = []
@@ -143,15 +145,37 @@ def sitvfy(input_data,settings_params):
             Bxy_sitv_min.append(min(Bxy_sitv[-1]))
             Bxy_sitv_max.append(max(Bxy_sitv[-1]))
             Bxy_sitv_mean.append(np.mean(Bxy_sitv[-1]))
+            
+            local_rangelist = rangelist[si_start:si_end]
+            contains_2 = False
+            contains_3 = False
+            for i in range(0,len(local_rangelist)):
+                if local_rangelist[i]==2:
+                    contains_2=True
+                elif local_rangelist[i]==3:
+                    contains_3=True
+            if contains_2:
+                range_sitv_val = 2
+                if contains_3:
+                    range_sitv_val = 23
+            else:
+                if contains_3:
+                    range_sitv_val = 3
+                else:
+                    range_sitv_val = -1
+            
+            range_sitv.append(range_sitv_val)
     
     Bx_sitv_mean = np.array(Bx_sitv_mean)
     By_sitv_mean = np.array(By_sitv_mean)
-    Bz_sitv_mean = np.array(Bz_sitv_mean)             
+    Bz_sitv_mean = np.array(Bz_sitv_mean)        
+
+    range_sitv = np.array(range_sitv)     
             
     subintervals = np.array(gapadj_subintervals.copy())
     sitv_midpoints_secs = (subintervals[:,0]+subintervals[:,1])/2
     
-    return([sitv_midpoints_secs,[Bx_sitv,By_sitv,Bz_sitv],Bmag_sitv_mean,[Bxy_sitv_min,Bxy_sitv_max,Bxy_sitv_mean]])
+    return([sitv_midpoints_secs,[Bx_sitv,By_sitv,Bz_sitv],Bmag_sitv_mean,[Bxy_sitv_min,Bxy_sitv_max,Bxy_sitv_mean],range_sitv])
     
     
 
@@ -182,6 +206,8 @@ def MVA(input_data):
     O_z_unfiltered = []
     
     for i in range(0,len(sitv_midpoints_secs)):
+        if i%int(len(sitv_midpoints_secs)/50)==0:
+            print(matplotlib.dates.num2date(sitv_midpoints_secs[i]/3600/24))
         data = np.array([Bx_sitv[i],By_sitv[i],Bz_sitv[i]])
         eigen = np.linalg.eig(varlist(data))   
     

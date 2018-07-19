@@ -140,7 +140,6 @@ B_x = df_arr[:,2]
 B_y = df_arr[:,3]
 B_z = df_arr[:,4]
 #B_mag = df_arr[:,5]
-rangelistint = (df_arr[:,9]).astype(int)
 
 if simulate_spinres:
     data_overall_spinres = fivevps_2_spinres(t,B_x,B_y,B_z)
@@ -153,6 +152,12 @@ if simulate_spinres:
 
 if ARTIFICIAL_OFFSET:
     B_z = np.array(len(B_z)*[artificial_Bz_offset]) + np.array(B_z)
+
+
+O_z_overall_PN16 = []
+O_z_overall_overlapping = []
+error_O_z_PN16 = []
+error_O_z_overlapping = []
 
 
 modified_data = mmcal_functions.data_in_interval([t,B_x,B_y,B_z],[data_start_time,data_end_time])
@@ -222,7 +227,7 @@ Mmode_indices_overlapping = []
 Mmode_indices_PN16_only = []
 Mmode_indices_SLD08_only = []
 
-O_z_PN16 = []
+
 
 
 dO=[]
@@ -253,13 +258,13 @@ for i in range(0,len(sitv_midpoints_secs)):
                     
     if lam1_lam2[i] > C_lam12:
         if lam3_lam2[i] > C_lam32:
-            if B_x1_angle[i] < C_MV_B:
-                Mmode_indices_SLD08.append(i)
-                Mmode_count_SLD08+=1
-                SLD08_satisfy=True
+            #if B_x1_angle[i] < C_MV_B:
+            Mmode_indices_SLD08.append(i)
+            Mmode_count_SLD08+=1
+            SLD08_satisfy=True
             
     if PN16_satisfy:
-        O_z_PN16.append(O_z_unfiltered[i])
+        O_z_overall_PN16.append(O_z_unfiltered[i])
         
         d_thetaD.append(np.arctan( (1/lam1_lam2[i]) ))
         d_b.append(abs(B_magn[i])*d_g+d_bn)
@@ -272,11 +277,16 @@ for i in range(0,len(sitv_midpoints_secs)):
         starttim.append(math.floor(subintervals[i][0]/(3600*24)))
          #O_z.append(Bz_sitv_mean[i]-x1[2]/x1_xy*Bxy_sitv_mean[i])
          
+        d_thetaB.append((d_b[-1]/(1+(bzmirror[-1]/bxymirror[-1])**2))*np.sqrt((1/bxymirror[-1])**2+(bzmirror[-1]/bxymirror[-1]**2)**2))   
+        error_O_z_PN16.append(np.sqrt(((np.tan(theta_mb[-1])-np.tan(theta_md[-1]))*d_b[-1])**2+((bxymirror[-1]*d_thetaB[-1])/(np.cos(theta_mb[-1]))**2)**2+((bxymirror[-1]*d_thetaD[-1])/(np.cos(theta_md[-1]))**2)**2))
+
          
         if SLD08_satisfy:
             if len(Mmode_indices_PN16)>0 and len(Mmode_indices_SLD08)>0:
                 if Mmode_indices_PN16[-1]==Mmode_indices_SLD08[-1]:
-                    Mmode_indices_overlapping.append(i)           
+                    Mmode_indices_overlapping.append(i)  
+                    O_z_overall_overlapping.append(O_z_overall_PN16[-1])
+                    error_O_z_overlapping.append(error_O_z_PN16[-1])
         else:
             Mmode_indices_PN16_only.append(i)
     else:
@@ -294,7 +304,7 @@ test=np.array(test)
             
 error=np.array(error)
 plt.figure()
-plt.plot(error,O_z_PN16,'x')
+plt.plot(error,O_z_overall_PN16,'x')
 x=np.linspace(0,20,1000)
 y=error+5
 y1=-error+5
@@ -314,11 +324,11 @@ for i in range(len(error)):
 dailyO=[]
 dailystd=[]
 N=[]
-sigma=np.array([1.]*len(O_z_PN16))
-for i in range(len(mmcal_functions.dailyOff(O_z_PN16,starttim)[0])):
-   dailyO.append( mmcal_functions.wadapkde(mmcal_functions.dailyOff(O_z_PN16,starttim)[0][i],w))
-   dailystd.append(np.std(mmcal_functions.dailyOff(O_z_PN16,starttim)[0][i]))
-   N.append(len(mmcal_functions.dailyOff(O_z_PN16,starttim)[0][i]))
+sigma=np.array([1.]*len(O_z_overall_PN16))
+for i in range(len(mmcal_functions.dailyOff(O_z_overall_PN16,starttim)[0])):
+   dailyO.append( mmcal_functions.wadapkde(mmcal_functions.dailyOff(O_z_overall_PN16,starttim)[0][i],w))
+   dailystd.append(np.std(mmcal_functions.dailyOff(O_z_overall_PN16,starttim)[0][i]))
+   N.append(len(mmcal_functions.dailyOff(O_z_overall_PN16,starttim)[0][i]))
    
 dailystd=np.array(dailystd)   
 N=np.array(N)
@@ -353,7 +363,7 @@ print("SLD08 only:",len(Mmode_sitv_times_SLD08_only))
 
 
 #Obtaining the pdf using kde
-O_z_PN16_T = np.transpose(np.array([O_z_PN16]))
+O_z_PN16_T = np.transpose(np.array([O_z_overall_PN16]))
 kde= KernelDensity(kernel='gaussian',bandwidth=1.0).fit(O_z_PN16_T)
 log_pdf = kde.score_samples(O_z_PN16_T)
 pdf = np.exp(log_pdf)
@@ -368,15 +378,15 @@ i=0
 j=0
 k=0
 #while i < len(subintervals):
-while j+k < len(O_z_PN16):
+while j+k < len(O_z_overall_PN16):
     if j<len(Mmode_indices_PN16_only):
         if i==Mmode_indices_PN16_only[j]:
-            O_z_PN16_only.append(O_z_PN16[j+k])
+            O_z_PN16_only.append(O_z_overall_PN16[j+k])
             pdf_PN16_only.append(pdf[j+k])
             j+=1
     if k<len(Mmode_indices_overlapping):
         if i==Mmode_indices_overlapping[k]:
-            O_z_overlapping.append(O_z_PN16[j+k])
+            O_z_overlapping.append(O_z_overall_PN16[j+k])
             pdf_overlapping1.append(pdf[j+k])
             k+=1
     i+=1
@@ -392,8 +402,9 @@ pdf_overlapping2 = np.exp(log_pdf_overlapping2)
 
 ################################################################################
 
-print("O_z PN16:",O_z_PN16[np.argmax(pdf)],np.mean(O_z_PN16),np.std(O_z_PN16))
+print("O_z PN16:",O_z_overall_PN16[np.argmax(pdf)],np.mean(O_z_overall_PN16),np.std(O_z_overall_PN16))
 print("O_z both:",O_z_overlapping[np.argmax(pdf_overlapping2)],np.mean(O_z_overlapping),np.std(O_z_overlapping))
+
 
 
 ################################################################################
@@ -401,6 +412,63 @@ print("O_z both:",O_z_overlapping[np.argmax(pdf_overlapping2)],np.mean(O_z_overl
 ######################## PLOTTING ##############################################
 
 ################################################################################
+
+
+
+error_O_z_PN16 = np.array(error_O_z_PN16)
+error_O_z_overlapping = np.array(error_O_z_overlapping)
+
+width_PN16=plt.hist(error_O_z_PN16,bins='auto')[1].max()
+w_PN16=[]
+for i in range(len(error_O_z_PN16)):
+    w_PN16.append(np.exp(-error_O_z_PN16[i]**2/(2*width_PN16**2)))  
+    
+width_overlapping=plt.hist(error_O_z_overlapping,bins='auto')[1].max()
+w_overlapping=[]
+for i in range(len(error_O_z_overlapping)):
+    w_overlapping.append(np.exp(-error_O_z_overlapping[i]**2/(2*width_overlapping**2)))  
+
+
+h_PN16=bandwidth.sskernel(np.array(O_z_overall_PN16))[2]
+x_PN16=np.linspace(-20,20,100000)
+ker=0
+for i in range(len(O_z_overall_PN16)):
+    mu=O_z_overall_PN16
+    y=1/(h_PN16 * np.sqrt(2 * np.pi)*w_PN16[i])*np.exp( - (x_PN16 - mu[i])**2 / (2 * h_PN16**2))
+    ker+=y
+ker_PN16=ker/len(O_z_overall_PN16)
+
+h_overlapping=bandwidth.sskernel(np.array(O_z_overall_overlapping))[2]
+x_overlapping=np.linspace(-20,20,100000)
+ker=0
+for i in range(len(O_z_overall_overlapping)):
+    mu=O_z_overall_overlapping
+    y=1/(h_overlapping * np.sqrt(2 * np.pi)*w_overlapping[i])*np.exp( - (x_overlapping - mu[i])**2 / (2 * h_overlapping**2))
+    ker+=y
+ker_overlapping=ker/len(O_z_overall_overlapping)
+
+
+kde_overall_PN16= KernelDensity(kernel='gaussian',bandwidth=1.0).fit(np.transpose(np.array([O_z_overall_PN16])))
+log_pdf_overall_PN16 = kde_overall_PN16.score_samples(np.transpose(np.array([O_z_overall_PN16])))
+pdf_overall_PN16 = np.exp(log_pdf_overall_PN16)
+
+kde_overall_overlapping= KernelDensity(kernel='gaussian',bandwidth=1.0).fit(np.transpose(np.array([O_z_overall_overlapping])))
+log_pdf_overall_overlapping = kde_overall_overlapping.score_samples(np.transpose(np.array([O_z_overall_overlapping])))
+pdf_overall_overlapping = np.exp(log_pdf_overall_overlapping)
+
+print("FINAL SUMMARY:\n")
+print("PN16:",len(O_z_overall_PN16))
+print("SLD08:",len(Mmode_indices_SLD08))
+print("overlapping:",len(O_z_overall_overlapping))
+print("PN16 only:",len(Mmode_indices_PN16_only))
+print("SLD08 only:",len(Mmode_indices_SLD08_only))
+
+print("O_z PN16:",O_z_overall_PN16[np.argmax(pdf_overall_PN16)],np.mean(O_z_overall_PN16),np.std(O_z_overall_PN16))
+print("O_z PN16 wadapkde:",x_PN16[np.where(ker_PN16==np.max(ker_PN16))[0][0]])
+print("O_z both:",O_z_overall_overlapping[np.argmax(pdf_overall_overlapping)],np.mean(O_z_overall_overlapping),np.std(O_z_overall_overlapping))
+print("O_z both wadapkde:",x_overlapping[np.where(ker_overlapping==np.max(ker_overlapping))[0][0]])
+
+
 
 if PLOT:
     
@@ -532,32 +600,23 @@ if PLOT:
     """
     
     f9=plt.figure()
-    ax9 = f9.add_subplot(111)    
-    #ax9.hist(O_z,bins=25,normed=True)
-    ax9.scatter(O_z_PN16_only,pdf_PN16_only,s=1.0,color='orange',label="PN16 only")
-    #if len(Mmode_sitv_times_SLD08_only) > 0:
-    #    ax9.scatter(O_z_SLD08_only,pdf_SLD08_only,s=1.0,color='green',label="SLD08 only")
-    ax9.scatter(O_z_overlapping,pdf_overlapping1,s=1.0,color='blue',label="PN16&SLD08(no[4])")
-    ax9.set_title("PDF from KDE: C3 "+plot_time_text+", %d PN16 intervals, $(t_{si}=%d,t_{sh}=%d)$ %.2fnT AO"%(Mmode_count_PN16,t_int,shift,artificial_Bz_offset))
+    ax9 = f9.add_subplot(111)
+    ax9.scatter(O_z_overall_PN16,pdf_overall_PN16,s=1.0,color='orange',label="PN16")
+    ax9.plot(x_PN16,ker_PN16,linewidth=1.0,color='red',label='adaptive weighted kde')
+    ax9.set_title("PDF from KDE: C3 "+plot_time_text+", %d PN16 intervals, $(t_{si}=%d,t_{sh}=%d)$ %.2fnT AO"%(len(O_z_overall_PN16),t_int,shift,artificial_Bz_offset))
     ax9.set_ylabel("Prob. Density")
     ax9.set_xlabel(r"$O_{z}$ (nT)")
-    ax9.legend()
-    
+    ax9.legend()        
+
     f10=plt.figure()
     ax10 = f10.add_subplot(111)
-    ax10.scatter(O_z_overlapping,pdf_overlapping2,s=1.0,color='blue',label="PN16&SLD08(no[4])")
-    ax10.set_title("PDF from KDE: C3 "+plot_time_text+", %d PN16&SLD08(no[4]) intervals, $(t_{si}=%d,t_{sh}=%d)$ %.2fnT AO"%(Mmode_count_overlapping,t_int,shift,artificial_Bz_offset))
+    ax10.scatter(O_z_overall_overlapping,pdf_overall_overlapping,s=1.0,color='blue',label="PN and SLD(2)")
+    ax10.plot(x_overlapping,ker_overlapping,linewidth=1.0,color='red',label='adaptive weighted kde')
+    ax10.set_title("PDF from KDE: C3 "+plot_time_text+", %d PN&SLD intervals, $(t_{si}=%d,t_{sh}=%d)$ %.2fnT AO"%(len(O_z_overall_overlapping),t_int,shift,artificial_Bz_offset))
     ax10.set_ylabel("Prob. Density")
     ax10.set_xlabel(r"$O_{z}$ (nT)")
-    ax10.legend()    
-
-    f11=plt.figure()
-    ax11 = f11.add_subplot(111)
-    ax11.scatter(O_z_PN16,pdf,s=1.0,color='orange',label="PN16")
-    ax11.set_title("PDF from KDE: C3 "+plot_time_text+", %d PN16 intervals, $(t_{si}=%d,t_{sh}=%d)$ %.2fnT AO"%(Mmode_count_PN16,t_int,shift,artificial_Bz_offset))
-    ax11.set_ylabel("Prob. Density")
-    ax11.set_xlabel(r"$O_{z}$ (nT)")
-    ax11.legend()        
+    ax10.legend()     
+    
 
     plt.show()        
 
