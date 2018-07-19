@@ -30,8 +30,8 @@ artificial_Bz_offset = -0.95-0.0438 #nT (in DSL coordinates)
 #csv_file_name = "C1_CP_FGM_5VPS__20060301_103000_20060301_113000_V140304"
 
 
-data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-02-01T13:00:00.300Z','%Y-%m-%dT%H:%M:%S.%fZ'))
-data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-02-27T19:59:40.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T06:01:00.300Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-03-30T19:59:40.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 #data_start_time = matplotlib.dates.date2num(datetime.strptime('2008-07-01T00:00:05.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 #data_end_time = matplotlib.dates.date2num(datetime.strptime('2008-07-02T00:00:01.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 
@@ -49,7 +49,7 @@ C_MV_B = 30*np.pi/180
 
 var_names = ['Time','Half Interval','Bx','By','Bz','Bt','x','y','z','range','tm']
 
-csv_file_name = "DSL_C3_CP_FGM_5VPS__200602_sheathselected"
+csv_file_name = "DSL_C3_CP_FGM_5VPS__200603_sheathselected"
 #csv_file_name ="DSL_THEMIS_C_FGM_SPINRES_2008Jul"
 csv_df = pd.read_csv(os.getcwd()+"//" +  csv_file_name + ".csv",names=var_names)
 
@@ -105,7 +105,7 @@ B_x = df_arr[:,2]
 B_y = df_arr[:,3]
 B_z = df_arr[:,4]
 #B_mag = df_arr[:,5]
-B_z = np.array(len(B_z)*[artificial_Bz_offset]) + np.array(B_z)
+#B_z = np.array(len(B_z)*[artificial_Bz_offset]) + np.array(B_z)
 #!!!!!!!!!!!!! artificial offset set here:
 if ARTIFICIAL_OFFSET:
     B_z = np.array(len(B_z)*[artificial_Bz_offset]) + np.array(B_z)
