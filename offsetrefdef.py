@@ -25,13 +25,13 @@ ARTIFICIAL_OFFSET = False
 PLOT= True
 sitv_in_sheath_frac_analysis = True
 
-artificial_Bz_offset = -0.95-0.0438 #nT (in DSL coordinates)
+artificial_Bz_offset = -0.0786-0.0084-0.001 #nT (in DSL coordinates)
 
 #csv_file_name = "C1_CP_FGM_5VPS__20060301_103000_20060301_113000_V140304"
 
 
-data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T06:01:00.300Z','%Y-%m-%dT%H:%M:%S.%fZ'))
-data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-03-30T19:59:40.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-01-01T15:01:00.300Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-01-29T10:57:59.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 #data_start_time = matplotlib.dates.date2num(datetime.strptime('2008-07-01T00:00:05.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 #data_end_time = matplotlib.dates.date2num(datetime.strptime('2008-07-02T00:00:01.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 
@@ -49,7 +49,7 @@ C_MV_B = 30*np.pi/180
 
 var_names = ['Time','Half Interval','Bx','By','Bz','Bt','x','y','z','range','tm']
 
-csv_file_name = "DSL_C3_CP_FGM_5VPS__200603_sheathselected"
+csv_file_name = "Analysis\DSL_Analysis\C3_CP_FGM_5VPS__200601_sheathselected"
 #csv_file_name ="DSL_THEMIS_C_FGM_SPINRES_2008Jul"
 csv_df = pd.read_csv(os.getcwd()+"//" +  csv_file_name + ".csv",names=var_names)
 
@@ -104,8 +104,9 @@ t = df_arr[:,0]
 B_x = df_arr[:,2]
 B_y = df_arr[:,3]
 B_z = df_arr[:,4]
+rang=df_arr[:,-2]
 #B_mag = df_arr[:,5]
-#B_z = np.array(len(B_z)*[artificial_Bz_offset]) + np.array(B_z)
+B_z = np.array(len(B_z)*[artificial_Bz_offset]) + np.array(B_z)
 #!!!!!!!!!!!!! artificial offset set here:
 if ARTIFICIAL_OFFSET:
     B_z = np.array(len(B_z)*[artificial_Bz_offset]) + np.array(B_z)
@@ -139,6 +140,7 @@ t = t[data_start_index:data_end_index]
 B_x = B_x[data_start_index:data_end_index]
 B_y = B_y[data_start_index:data_end_index]
 B_z = B_z[data_start_index:data_end_index]
+rang=rang[data_start_index:data_end_index]
 #B_mag = B_mag[data_start_index:data_end_index]
 B_x.astype(float)
 B_y.astype(float)
@@ -211,7 +213,7 @@ Bz_sitv_mean = []
 Bxy_sitv_min = []
 Bxy_sitv_max = []
 Bxy_sitv_mean = []
-
+rangesitv=[]
 gapadj_subintervals = []
 for i in range(0,int((t_secs[-1]-t_secs[0]-t_int+shift)/shift)):
     si_start = np.argmax(t_secs>subintervals[i][0])
@@ -225,6 +227,7 @@ for i in range(0,int((t_secs[-1]-t_secs[0]-t_int+shift)/shift)):
         Bz_sitv.append(B_z[si_start:si_end])
         Bmag_sitv.append(B_mag[si_start:si_end])
         Bxy_sitv.append(B_xy[si_start:si_end])
+        rangesitv.append(rang[si_start:si_end])
         
         Bx_sitv_mean.append(np.mean(B_x[si_start:si_end]))
         By_sitv_mean.append(np.mean(B_y[si_start:si_end]))
@@ -238,7 +241,7 @@ By_sitv_mean = np.array(By_sitv_mean)
 Bz_sitv_mean = np.array(Bz_sitv_mean)             
         
 subintervals = np.array(gapadj_subintervals.copy())
-
+#group the range into subintervals
 
 B_x1_angle = []
 theta_D = []
@@ -266,8 +269,10 @@ theta_mb=[]
 theta_md=[]
 test=[]
 B_magn=[]
+rangemm=[]
 #using PN16 criteria 
 starttim=[]
+mirrorindex=[]
 for i in range(0,len(subintervals)):
     data = np.array([Bx_sitv[i],By_sitv[i],Bz_sitv[i]])
     eigen = np.linalg.eig(varlist(data))   
@@ -326,10 +331,11 @@ for i in range(0,len(subintervals)):
                      theta_md.append(theta_D_PN16[i])
                      test.append(Bxy_sitv_mean[i]*(np.tan(theta_B_PN16[i])-np.tan(theta_D_PN16[i])))
                      starttim.append(math.floor(subintervals[i][0]/(60**2*24)))
+                     mirrorindex.append(i)
                      #O_z.append(Bz_sitv_mean[i]-x1[2]/x1_xy*Bxy_sitv_mean[i])
                      
                      
-
+                     
                      O_z.append(Bz_sitv_mean[i] - x1[2]/x1_xy*Bxy_sitv_mean[i] )
 
  
@@ -338,6 +344,10 @@ for i in range(len(d_b)):
     d_thetaB.append((d_b[i]/(1+(bzmirror[i]/bxymirror[i])**2))*np.sqrt((1/bxymirror[i])**2+(bzmirror[i]/bxymirror[i]**2)**2))   
     error.append(np.sqrt(((np.tan(theta_mb[i])-np.tan(theta_md[i]))*d_b[i])**2+((bxymirror[i]*d_thetaB[i])/(np.cos(theta_mb[i]))**2)**2+((bxymirror[i]*d_thetaD[i])/(np.cos(theta_md[i]))**2)**2))                 
 test=np.array(test)
+
+mirrorange=[]
+for i in mirrorindex:
+    mirrorange.append(rangesitv[i])
 
 def dailyOff(O_z,starttim):
     
@@ -374,14 +384,6 @@ def dailyOff(O_z,starttim):
     
     return O_ztd,errord
  
-
-"""
-for i in O_ztd:
-    kde= KernelDensity(kernel='gaussian',bandwidth=1.0).fit(i)
-    log_pdf = kde.score_samples(O_z_T)
-    plt.scatter(O_z,np.exp(log_pdf),s=1.0,color='orange',label="0nT artificial offset")
-"""    
-
 error=np.array(error)
 plt.figure()
 plt.plot(error,O_z,'x')
@@ -482,40 +484,34 @@ def fwhm(arr):
     for i in range(len(d)):
         if d[i]>0:
             leftid= i
-            print(leftid)
-            print(x[leftid])
         elif d[i]<0:
             rightid=i
     rightu= x[rightid]-x[np.where(arr==np.max(arr))[0][0]]
     leftu= x[np.where(arr==np.max(arr))[0][0]]-x[leftid]
     return [leftu,rightu, x[rightid]-x[leftid]]
 
-"""
+two=0
+three=0
+four=0
+five=0
+for i in range(len(rang)):
+    if rang[i]==2:
+        two+=1
+    elif  rang[i]==3:
+        three+=1
+    elif  rang[i]==4:
+        four+=1
+    elif  rang[i]==5:
+        five+=1
 
-plt.plot(dailyO,'x',color='red')
-plt.title("Thermis July daily O_z data 5nT offset")
-plt.xlabel("days")
-plt.ylabel("$O_z$")
+print("Number of mm intervals:"," ",len(O_z))
+print("kde estimation:"," ",kde(O_z,sigma,w)[1])
+print("kde error:"," ",fwhm(kde(O_z,sigma,w)[0]))
+print("wadapkde estimation:"," ",wadapkde(O_z,w)[1])
+print("wadapkde error:"," ",fwhm(wadapkde(O_z,w)[0]))
 
-plt.plot(dailystd,'x',color='r')
-plt.title("Thermis July std 5nT offset")
-plt.xlabel("days")
-plt.ylabel("$\sigma/nT$")
+count=0
 
-
-plt.plot(N,'x',color='r')
-plt.title("Thermis July number of points 5nT offset")
-plt.xlabel("days")
-plt.ylabel("$N$")
-
-plt.plot(dailystd/np.sqrt(N),'x',color='r')
-plt.title("$\sigma/\sqrt{N}$ 5nT offset")
-plt.xlabel("days")
-plt.ylabel("$\sigma/\sqrt{N}/nT$")
-
-plt.plot(dailystd/np.sqrt(N),dailyO,'x',color='r')
-plt.xlim(0,1.2)
-plt.ylim(-5,15)
-plt.xlabel("$\sigma/\sqrt{N}/nT$")
-plt.ylabel("$O_zF/nT$")
-"""
+for i in range(len(mirrorange)):
+  if 3 in mirrorange[i]:
+      count3+=1
