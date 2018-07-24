@@ -25,9 +25,6 @@ import mmcal_functions
 
 from sklearn.neighbors.kde import KernelDensity
 
-analysis_settings = open(os.getcwd()+"\\"+"Analysis_Settings"+".txt")
-as_text = analysis_settings.readlines()
-
 #offset_analysis
 #contains code from 'mmode_search' part of main.py
 #dsl based data must be used for this to give valid results
@@ -38,18 +35,12 @@ as_text = analysis_settings.readlines()
 
 ################################################################################
 
-#ARTIFICIAL_OFFSET = True
-#PLOT= True
+ARTIFICIAL_OFFSET = True
+PLOT= True
 sitv_in_sheath_frac_analysis = False
 simulate_spinres = False
 
-ARTIFICIAL_OFFSET = bool( ( (as_text[3]).split() )[1] )
-PLOT= bool( ( (as_text[4]).split() )[1] )
-
-
-
-#artificial_Bz_offset = 5.0 #nT (in DSL coordinates- hence in spin axis direction)
-artificial_Bz_offset = float( ( (as_text[5]).split() )[1] )
+artificial_Bz_offset = 5.0 #nT (in DSL coordinates- hence in spin axis direction)
 if not(ARTIFICIAL_OFFSET):
     artificial_Bz_offset = 0.0
 
@@ -57,11 +48,9 @@ if not(ARTIFICIAL_OFFSET):
 #csv_file_name = "DSL_C3_CP_FGM_5VPS__20060301_000000_20060302_000000_V140305"
 #csv_file_name = "DSL_C3_CP_FGM_5VPS__20060302_000000_20060307_000000_V140305"
 #csv_file_name = "DSL_C3_CP_FGM_5VPS__20060307_000000_20060312_000000_V140305"
-#csv_file_name = "DSL_C3_CP_FGM_5VPS__200510_NONsheathselected"
-csv_file_name = ( (as_text[6]).split() )[1]
+csv_file_name = "C3_CP_FGM_5VPS__200511_sheathselected"
 
-#sheath_file_name = "C3_CP_sheathintervals__200510"
-sheath_file_name = ( (as_text[7]).split() )[1]
+sheath_file_name = "C3_CP_sheathintervals__200511"
 
 #data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T00:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 #data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-03-01T22:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
@@ -70,25 +59,15 @@ sheath_file_name = ( (as_text[7]).split() )[1]
 #data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-11-03T00:00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 #data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-11-03T23:59:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 
-#yyyy_s = '2005'
-#mm_s = '10'
-#dd_s = '01'
-#hh24_s = '00'
+yyyy_s = '2005'
+mm_s = '11'
+dd_s = '01'
+hh24_s = '00'
 
-#yyyy_e = '2005'
-#mm_e = '10'
-#dd_e = '31'
-#hh24_e = '23'
- 
-yyyy_s = ( (as_text[8]).split() )[1]
-mm_s = ( (as_text[9]).split() )[1]
-dd_s = ( (as_text[10]).split() )[1]
-hh24_s = ( (as_text[11]).split() )[1]
-
-yyyy_e = ( (as_text[12]).split() )[1]
-mm_e = ( (as_text[13]).split() )[1]
-dd_e = ( (as_text[14]).split() )[1]
-hh24_e = ( (as_text[15]).split() )[1]
+yyyy_e = '2005'
+mm_e = '11'
+dd_e = '30'
+hh24_e = '23'
 
 #plot_time_text = yyyy_s+'/'+mm_s+'/'+dd_s+' '+hh24_s+'~'+hh24_e
 plot_time_text = yyyy_s+'/'+mm_s+'/'+dd_s+' '+hh24_s+'~'+ dd_e+' ' +hh24_e
@@ -96,11 +75,8 @@ plot_time_text = yyyy_s+'/'+mm_s+'/'+dd_s+' '+hh24_s+'~'+ dd_e+' ' +hh24_e
 overall_data_start_time = matplotlib.dates.date2num(datetime.strptime(yyyy_s+'-'+mm_s+'-'+dd_s+'T'+hh24_s+':00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 overall_data_end_time = matplotlib.dates.date2num(datetime.strptime(yyyy_e+'-'+mm_e+'-'+dd_e+'T'+hh24_e+':00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 
-num2month = {'01':'Jan','02':'Feb','03':'Mar','04':'Apr',\
-             '05':'May','06':'Jun','07':'Jul','08':'Aug',\
-             '09':'Sep','10':'Oct','11':'Nov','12':'Dec'}
-
-plot_time_text = num2month[mm_s] +" "+ yyyy_s
+#plot_time_text = "Jul 2008"
+plot_time_text = "Nov 2005"
 
 t_int = 180
 shift = 10
