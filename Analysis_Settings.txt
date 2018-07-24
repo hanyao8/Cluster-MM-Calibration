@@ -19,13 +19,13 @@ hh24_e: 04
 offsetrefdef
 ARTIFICIAL_OFFSET: True
 PLOT: True
-artificial_Bz_offset = -0.0786
+artificial_Bz_offset: 5.0
 yyyy_s: 2005
-mm_s: 10
+mm_s: 11
 dd_s: 01
-hh24_s: 03
+hh24_s: 00
 yyyy_e: 2005
-mm_e: 10
-dd_e: 01
+mm_e: 11
+dd_e: 06
 hh24_e: 04
-csv_file_name: Analysis\DSL_Analysis\C3_CP_FGM_5VPS__200601_sheathselected
+csv_file_name: DSL_C3_CP_FGM_5VPS__200511_sheathselected
