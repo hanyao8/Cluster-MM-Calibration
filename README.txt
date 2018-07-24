@@ -34,6 +34,7 @@ spinaxis_file_name: Name of spin-axis orientation time series file to be used fo
 
 
 ANALYSIS SETTINGS:
+multiinterval_analysis2 / offsetrefdef
 ARTIFICIAL_OFFSET: (True,False)
 PLOT: (True,False) 'True' to generate graphs
 artificial_Bz_offset: (Float) This artificial offset is applied if ARTIFICIAL_OFFSET==True

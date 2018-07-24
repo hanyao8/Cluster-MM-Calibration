@@ -16,7 +16,7 @@ import math
 #import time
 from datetime import datetime
 from scipy import stats
-import gaussian
+#import gaussian
 from scipy.integrate import quad
 import bandwidth
 from sklearn.neighbors.kde import KernelDensity
