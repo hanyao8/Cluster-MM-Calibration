@@ -14,3 +14,18 @@ yyyy_e: 2005
 mm_e: 10
 dd_e: 01
 hh24_e: 04
+
+
+offsetrefdef
+ARTIFICIAL_OFFSET: True
+PLOT: True
+artificial_Bz_offset = -0.0786
+yyyy_s: 2005
+mm_s: 10
+dd_s: 01
+hh24_s: 03
+yyyy_e: 2005
+mm_e: 10
+dd_e: 01
+hh24_e: 04
+csv_file_name: Analysis\DSL_Analysis\C3_CP_FGM_5VPS__200601_sheathselected

@@ -21,17 +21,29 @@ from scipy.integrate import quad
 import bandwidth
 from sklearn.neighbors.kde import KernelDensity
 
-ARTIFICIAL_OFFSET = False
-PLOT= True
-sitv_in_sheath_frac_analysis = True
+analysis_settings = open(os.getcwd()+"\\"+"Analysis_Settings"+".txt")
+as_text = analysis_settings.readlines()
 
-artificial_Bz_offset = -0.0786-0.0084-0.001 #nT (in DSL coordinates)
+ARTIFICIAL_OFFSET = bool( ( (as_text[19]).split() )[1] )
+PLOT= bool( ( (as_text[20]).split() )[1] )
+sitv_in_sheath_frac_analysis = False
+
+artificial_Bz_offset = float( ( (as_text[21]).split() )[1] ) #nT (in DSL coordinates)
 
 #csv_file_name = "C1_CP_FGM_5VPS__20060301_103000_20060301_113000_V140304"
 
+yyyy_s = ( (as_text[22]).split() )[1]
+mm_s = ( (as_text[23]).split() )[1]
+dd_s = ( (as_text[24]).split() )[1]
+hh24_s = ( (as_text[25]).split() )[1]
 
-data_start_time = matplotlib.dates.date2num(datetime.strptime('2006-01-01T15:01:00.300Z','%Y-%m-%dT%H:%M:%S.%fZ'))
-data_end_time = matplotlib.dates.date2num(datetime.strptime('2006-01-29T10:57:59.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+yyyy_e = ( (as_text[26]).split() )[1]
+mm_e = ( (as_text[27]).split() )[1]
+dd_e = ( (as_text[28]).split() )[1]
+hh24_e = ( (as_text[29]).split() )[1]
+
+data_start_time = matplotlib.dates.date2num(datetime.strptime(yyyy_s+'-'+mm_s+'-'+dd_s+'T'+hh24_s+':00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
+data_end_time = matplotlib.dates.date2num(datetime.strptime(yyyy_e+'-'+mm_e+'-'+dd_e+'T'+hh24_e+':00:00.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 #data_start_time = matplotlib.dates.date2num(datetime.strptime('2008-07-01T00:00:05.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 #data_end_time = matplotlib.dates.date2num(datetime.strptime('2008-07-02T00:00:01.000Z','%Y-%m-%dT%H:%M:%S.%fZ'))
 
@@ -49,7 +61,7 @@ C_MV_B = 30*np.pi/180
 
 var_names = ['Time','Half Interval','Bx','By','Bz','Bt','x','y','z','range','tm']
 
-csv_file_name = "Analysis\DSL_Analysis\C3_CP_FGM_5VPS__200601_sheathselected"
+csv_file_name = ( (as_text[30]).split() )[1]
 #csv_file_name ="DSL_THEMIS_C_FGM_SPINRES_2008Jul"
 csv_df = pd.read_csv(os.getcwd()+"//" +  csv_file_name + ".csv",names=var_names)
 
