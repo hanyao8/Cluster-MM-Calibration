@@ -1,0 +1,27 @@
+PREPROCESSING SETTINGS
+
+cef2csv_parser
+setting: spinaxis
+cef_file_name: C3_CP_AUX_SPIN_AXIS__20051001_000000_20051101_000000_V130205
+
+cef2csv_parser_wsheath_select
+setting: fgmdata
+writing_sheath_intervals: True
+cef_file_name: C3_CP_FGM_5VPS__20051001_000000_20051011_000000_V150909
+yyyy_s: 2005
+mm_s: 10
+dd_s: 01
+hh24_s: 03
+yyyy_e: 2005
+mm_e: 10
+dd_e: 01
+hh24_e: 04
+sheathfile_name: C3_CP_sheathintervals__200510a
+outputfile_name: C3_CP_FGM_5VPS__200510_NONsheathselecteda
+
+gse2dsl_transformation
+themis_validation: False
+gsedata_file_name: C3_CP_FGM_5VPS__200510_NONsheathselected
+spinaxis_file_name: C3_CP_AUX_SPIN_AXIS__20051001_000000_20051101_000000_V130205
+
+

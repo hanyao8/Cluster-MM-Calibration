@@ -140,7 +140,7 @@ B_x = df_arr[:,2]
 B_y = df_arr[:,3]
 B_z = df_arr[:,4]
 #B_mag = df_arr[:,5]
-rangelistint = (df_arr[:,9]).astype(int)
+
 
 if simulate_spinres:
     data_overall_spinres = fivevps_2_spinres(t,B_x,B_y,B_z)
